@@ -175,9 +175,12 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
         bufsize=os.environ.get('VT_BUFSIZE','32M')
         vopts=(f'-c:v h264_videotoolbox -b:v {bitrate} -maxrate {maxrate} '
                f'-bufsize {bufsize} -profile:v high -allow_sw 0 -realtime 1 '
-               f'-prio_speed 1 -pix_fmt nv12')
+               f'-prio_speed 1 -pix_fmt nv12 '
+               f'-color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv')
     else:
-        vopts=f'-c:v libx264 -preset {preset} -crf {crf} -pix_fmt yuv420p'
+        vopts=(f'-c:v libx264 -preset {preset} -crf {crf} -pix_fmt yuv420p '
+               f'-x264-params "colorprim=bt709:transfer=bt709:colormatrix=bt709:fullrange=off" '
+               f'-color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv')
     sh(f'ffmpeg -y -v error {ins} -filter_complex "{f}" -map "[vfin]" -map "[afin]" '
        f'{vopts} -c:a aac -b:a 160k '
        f'{extra} -movflags +faststart "{out}"')

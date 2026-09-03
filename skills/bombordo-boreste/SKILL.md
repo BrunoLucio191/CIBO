@@ -197,6 +197,16 @@ These all shipped once. Do not rediscover them.
     `block_long` warning — run it on every delivered clip, not just a visual
     spot-check; this shipped on a real render (`corte02`, 19 warnings) before
     being caught here.
+18. **Delivered MP4 has no colour metadata, so some players/hosts misread it as
+    full-range or the wrong matrix.** `render.py` composed the final H.264 (both
+    the `libx264` and `h264_videotoolbox` paths) without tagging
+    `color_primaries`/`color_trc`/`colorspace`/`color_range`. Fixed: both paths
+    now explicitly tag `bt709`/`tv`, and the `libx264` path also sets the
+    equivalent `x264-params` (`colorprim`/`transfer`/`colormatrix`/`fullrange=off`)
+    so the flag is baked into the encoded stream, not just the container header.
+    Caught by `video-delivery-safety-check` — verify with `ffprobe -show_entries
+    stream=color_range,color_space,color_transfer,color_primaries` on every
+    delivered clip, not just a visual spot-check.
 
 ## Rules that matter
 
