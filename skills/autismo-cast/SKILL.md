@@ -178,6 +178,24 @@ These all shipped once. Do not rediscover them.
 15. **Limiter unexpectedly makes everything louder.** ffmpeg's `alimiter` can
     auto-level by default. Use `level=false`; a ceiling near `0.85` leaves enough room
     for AAC conversion without true-peak clipping.
+16. **"Stream specifier ':a' ... matches no streams" on the final render.** The
+    bundled `filmburn_blue.mp4` is video-only — `render.final()` used to
+    unconditionally reuse `[2:a]` (the burn's own audio) for the outro mix, which
+    fails outright against a silent burn asset. Fixed: `render.py` now probes
+    `FILMBURN` for an audio stream with `ffprobe` and only builds the burn-audio
+    mix layer when one exists, otherwise skips straight to the limiter. If you
+    swap in a burn asset that *does* carry its own whoosh/SFX audio, this path
+    picks it up automatically — no code change needed.
+17. **A long, unfragmented SRT cue ships as one on-screen wall of text.**
+    `plan.py`'s caption builder only *merged* short adjacent SRT cues up to the
+    18-char limit — it never *split* a cue that was already longer than that on
+    its own. A fluent passage with few pauses can land as one 30-40 character
+    segment, sitting motionless on screen for its whole duration instead of
+    short auto-wrapped captions. Fixed: atoms longer than 18 chars are now split
+    into word-packed chunks before merging, with time apportioned by character
+    count across the original cue's span. Caught by `caption-quality-gate`'s
+    `block_long` warning — run it on every delivered clip, not just a visual
+    spot-check.
 
 ## Rules that matter
 

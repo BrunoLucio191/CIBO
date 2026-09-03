@@ -112,6 +112,28 @@ def build(name):
                 for pat,rep in FIX: txt=re.sub(pat,rep,txt,flags=re.I)
                 atoms.append([off+(s2-a),off+(e2-a),txt.strip()])
     atoms.sort()
+    # split any atom whose whole SRT cue already exceeds the caption limit —
+    # otherwise a long, unfragmented whisper segment ships as one on-screen
+    # wall of text instead of the intended short auto-wrapped captions.
+    _split=[]
+    for a0,a1,txt in atoms:
+        if len(txt)<=18:
+            _split.append([a0,a1,txt]); continue
+        words=txt.split(); chunks=[]; cur=[]; curlen=0
+        for w in words:
+            wl=len(w)+(1 if cur else 0)
+            if curlen+wl>18 and cur:
+                chunks.append(' '.join(cur)); cur=[w]; curlen=len(w)
+            else:
+                cur.append(w); curlen+=wl
+        if cur: chunks.append(' '.join(cur))
+        total_chars=sum(len(c) for c in chunks) or 1
+        dur=a1-a0; t=a0
+        for i,chunk in enumerate(chunks):
+            frac=len(chunk)/total_chars
+            c_end=a1 if i==len(chunks)-1 else t+dur*frac
+            _split.append([t,c_end,chunk]); t=c_end
+    atoms=_split
     # merge into <=18 char captions
     caps=[]
     for a in atoms:

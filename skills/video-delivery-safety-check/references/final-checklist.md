@@ -1,5 +1,15 @@
 # Checklist final
 
+## Prioridade quando itens conflitam
+
+Quando um efeito, corte ou decisão estética prejudica um nível mais alto desta lista, ele deve ser removido ou refeito — nunca mantido "porque já estava pronto":
+
+1. Fidelidade — não alterar fala, intenção ou contexto.
+2. Inteligibilidade — voz e ideia precisam ser compreensíveis.
+3. Enquadramento — sujeito e objeto citado permanecem visíveis.
+4. Retenção — tempo morto fora, atenção ordenada.
+5. Estética — legenda, headline e efeitos servem à mensagem, nunca o contrário.
+
 ## Correspondência ao pedido
 
 - corte, convidado, headline e duração corretos;

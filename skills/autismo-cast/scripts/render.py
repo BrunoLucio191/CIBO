@@ -141,12 +141,23 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
     burn_db=float(mix.get('outro_burn_db',-6))
     limiter=float(mix.get('limiter',0.85))
     limiter_level='true' if bool(mix.get('limiter_level',False)) else 'false'
-    f+=(f";[2:a]atrim=duration={OUTRO_BURN:.6f},asetpts=PTS-STARTPTS,"
-        f"volume={burn_db:g}dB,adelay={burn_delay}:all=1[outfx];"
-        f"[abase][outfx]amix=inputs=2:duration=first:normalize=0,"
-        f"alimiter=limit={limiter:g}:level={limiter_level}[abody0];"
-        f"anullsrc=r=48000:cl=stereo,atrim=0:{OUTRO_BLACK:.6f},asetpts=N/SR/TB[endquiet];"
-        f"[abody0][endquiet]concat=n=2:v=0:a=1[abody]")
+    fb_has_audio='audio' in subprocess.run(
+        ['ffprobe','-v','error','-select_streams','a','-show_entries','stream=codec_type',
+         '-of','csv=p=0',fb],capture_output=True,text=True).stdout
+    if fb_has_audio:
+        f+=(f";[2:a]atrim=duration={OUTRO_BURN:.6f},asetpts=PTS-STARTPTS,"
+            f"volume={burn_db:g}dB,adelay={burn_delay}:all=1[outfx];"
+            f"[abase][outfx]amix=inputs=2:duration=first:normalize=0,"
+            f"alimiter=limit={limiter:g}:level={limiter_level}[abody0];"
+            f"anullsrc=r=48000:cl=stereo,atrim=0:{OUTRO_BLACK:.6f},asetpts=N/SR/TB[endquiet];"
+            f"[abody0][endquiet]concat=n=2:v=0:a=1[abody]")
+    else:
+        # bundled FILMBURN asset (e.g. filmburn_blue.mp4) has no audio track of its
+        # own — skip reusing burn audio instead of feeding ffmpeg a stream that
+        # doesn't exist (fails the whole filtergraph with "matches no streams").
+        f+=(f";[abase]alimiter=limit={limiter:g}:level={limiter_level}[abody0];"
+            f"anullsrc=r=48000:cl=stereo,atrim=0:{OUTRO_BLACK:.6f},asetpts=N/SR/TB[endquiet];"
+            f"[abody0][endquiet]concat=n=2:v=0:a=1[abody]")
     if cover:
         cd=1.0/FPS  # Instagram only needs one frame to grab a thumbnail from
         ins+=f' -loop 1 -t {cd} -i "{cover}"'

@@ -45,6 +45,8 @@ Funções aceitas: transição, mudança de capítulo, revelação, luz, textura
 
 Pesquise primeiro no Drive/local. Se faltar, gere 3–5 consultas em inglês e pesquise em APIs/fontes autorizadas: Pexels, Pixabay, Coverr; Mixkit manual; ProductionCrate e Videvo somente com download autorizado e licença individual confirmada.
 
+Nota de API: a busca da Pexels tende a retornar 0 resultados para consultas longas/compostas mesmo quando o conceito existe no acervo. Se uma consulta conceitual falhar, tente de novo com uma ou duas palavras de sentido amplo antes de descartar a fonte — isso é um limite de parsing da busca, não ausência do tema.
+
 Pontue 0–5: compatibilidade 25%, qualidade 20%, integração 15%, composição 15%, identidade 10%, especificações 10%, licença 5%. Rejeite watermark, compressão ruim, baixa resolução, marca/texto indesejado, licença indefinida ou efeito que esconda o rosto.
 
 Priorize ProRes 4444/PNG/WebM com alpha. Para fundo preto use Screen/Add/Lighten; para fundo branco, Multiply/Darken; chroma key verde é último recurso. Sincronize direção e intensidade com SFX discreto. Efeitos empresariais devem ser simples e consistentes.
