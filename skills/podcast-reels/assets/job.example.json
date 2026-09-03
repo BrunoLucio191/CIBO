@@ -1,0 +1,21 @@
+{
+  "srt":     "/path/ep1.srt",
+  "srcdir":  "/path/cortes",
+  "work":    "/path/cortes/_work",
+  "outdir":  "/path/cortes/reels",
+  "logo":    "/path/logo.png",
+  "preset":  "medium",
+  "crf":     21,
+  "emph":    "80% risco gasolina sabonete Coca-Cola pigmento navios",
+  "fix":     [["\\bserbo\\b","sebo"], ["\\bsó da cálcica\\b","soda cáustica"]],
+  "clips": {
+    "corte01": {
+      "src": "corte01.mp4",
+      "master_in": 708.866,
+      "headline": "80% DE TUDO QUE\nEXISTE NO MUNDO\nPASSOU POR UM PORTO",
+      "cropx": 0.50,
+      "cover_t": 8.0,
+      "keeps": [[0.0,4.35],[5.0,6.5],[6.9,11.5]]
+    }
+  }
+}

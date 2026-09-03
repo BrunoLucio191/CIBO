@@ -1,0 +1,48 @@
+{
+  "srt":     "/path/ep1.srt",
+  "srcdir":  "/path/cortes",
+  "work":    "/path/cortes/_work",
+  "outdir":  "/path/cortes/reels",
+  "logo":    "/path/logo_content_hub_transparent.png",
+  "click":   "/path/click.wav",
+  "whoosh":  "/path/whoosh_soft.wav",
+  "pop":     "/path/pop_low.wav",
+  "filmburn":"/path/filmburn_blue_with_audio.mp4",
+  "click_gain": 0.11,
+  "mix": {
+    "music_db": -21,
+    "duck_threshold": 0.08,
+    "duck_ratio": 5,
+    "outro_burn_db": -6,
+    "limiter": 0.85,
+    "limiter_level": false
+  },
+  "preset":  "medium",
+  "crf":     21,
+  "emph":    "80% risco gasolina sabonete Coca-Cola pigmento navios",
+  "fix":     [["\\bserbo\\b","sebo"], ["\\bsó da cálcica\\b","soda cáustica"]],
+  "clips": {
+    "corte01": {
+      "src": "corte01.mp4",
+      "master_in": 708.866,
+      "headline": "80% DE TUDO QUE\nEXISTE NO MUNDO\nPASSOU POR UM PORTO",
+      "cropx": 0.50,
+      "cropx_timeline": [[0.0,0.50],[8.2,0.56]],
+      "grade": {"curves":"0/0.01 0.20/0.23 0.50/0.52 0.80/0.81 1/1","saturation":0.96},
+      "cover_t": 8.0,
+      "cover_cropx": 0.58,
+      "cover_logo_side": "right",
+      "music": "/path/music.mp3",
+      "mix": {"music_db": -22, "music_offset": 12},
+      "letterings": [
+        {"t": 8.2, "duration": 2.6, "text": "80% DO COMÉRCIO", "accent": "80%", "side": "left", "y": 160, "size": 58}
+      ],
+      "broll": [
+        {"t": 14.7, "duration": 4.8, "path": "/path/context_validated_broll.mp4", "height": 610}
+      ],
+      "impact_pulses": [{"t":2.8,"amount":0.05,"duration":1.0}],
+      "long_moves": [{"t":14.7,"amount":0.035,"duration":2.6}],
+      "keeps": [[0.0,4.35],[5.0,6.5],[6.9,11.5]]
+    }
+  }
+}

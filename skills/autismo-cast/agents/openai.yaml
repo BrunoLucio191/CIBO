@@ -1,0 +1,4 @@
+interface:
+  display_name: "Autismo Cast"
+  short_description: "Cortes verticais do Autismo Cast"
+  default_prompt: "Use $autismo-cast para criar cortes verticais deste episódio."

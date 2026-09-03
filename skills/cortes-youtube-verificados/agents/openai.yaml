@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cortes do YouTube Verificados"
+  short_description: "Baixa, corta e valida vídeos do YouTube"
+  default_prompt: "Use $cortes-youtube-verificados para baixar e cortar este vídeo do YouTube com validação completa."

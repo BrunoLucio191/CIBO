@@ -1,0 +1,23 @@
+{
+  "srt":     "/path/transcript.srt",
+  "srcdir":  "/path/cortes",
+  "work":    "/path/cortes/_work",
+  "outdir":  "/path/reels",
+  "font":    "/Users/bruno/.claude/skills/katia/assets/Montserrat-VariableFont_wght.ttf",
+  "preset":  "medium",
+  "crf":     21,
+  "emph":    "invisível repertório etarismo dieta protagonismo potência autoridade escolher recomeçar difícil arrogante 50",
+  "fix":     [],
+  "clips": {
+    "corte01": {
+      "src": "corte01.mp4",
+      "master_in": 465.7,
+      "headline": "ELEGÂNCIA NÃO É\nFICAR INVISÍVEL\nDEPOIS DOS 50",
+      "cropx": 0.58,
+      "cover_t": 3.0,
+      "keeps": [[0.3, 76.3]],
+      "music": "/Volumes/SSD/Movies/Edição/Mídia/gravaçõesSEBRAE/content_hub_assets/music/piano_reflections_ahjay_stelino.mp3",
+      "mix": {"music_offset": 0}
+    }
+  }
+}
