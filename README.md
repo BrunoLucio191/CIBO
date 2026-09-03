@@ -21,6 +21,11 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 
 ## Skills
 
+### Roteamento de cliente
+| Skill | O que faz |
+|---|---|
+| `client-router` | Identifica a que cliente pertence um job antes de qualquer corte, e garante que fonte, logo, trilha, SFX e capa nunca vazem entre clientes — mesmo quando compartilham o mesmo motor de render. |
+
 ### Cortes por cliente (vertical 9:16)
 | Skill | O que faz |
 |---|---|
