@@ -3,6 +3,7 @@ import os
 import json, math, subprocess, sys, os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from easing import entrance, ease_out_back
 
 import os
 FONT=os.environ['FONT']
@@ -88,16 +89,15 @@ def build_caption(words,flags):
         y=bl+des[i]+gap
     return items
 
-def eo3(p): return 1-(1-p)**3
 def eob(p,s=1.55): return 1+(s+1)*(p-1)**3+s*(p-1)**2
 
-def paste(canvas,tile,cx,cy,ax,ay,scale,alpha):
+def paste(canvas,tile,cx,cy,ax,ay,scale,alpha,dx=0.0,dy=0.0):
     if alpha<=0.004: return
     w=max(1,int(round(tile.width*scale))); h=max(1,int(round(tile.height*scale)))
     t=tile.resize((w,h),Image.LANCZOS) if abs(scale-1)>1e-3 else tile.copy()
     if alpha<0.999:
         a=t.getchannel('A').point(lambda v:int(v*alpha)); t.putalpha(a)
-    x=int(round(cx-ax*scale)); y=int(round(cy-ay*scale))
+    x=int(round(cx-ax*scale+dx)); y=int(round(cy-ay*scale+dy))
     canvas.alpha_composite(t,(x,y))
 
 def render(clip,outdir):
@@ -119,16 +119,18 @@ def render(clip,outdir):
         cv=Image.new('RGBA',(W,BAND_H),(0,0,0,0))
         for c in act:
             dt=t-c['s']
-            pb=min(1.0,max(0.0,dt/0.12)); sb=0.93+0.07*eo3(pb); ab=min(1.0,pb*1.6)
+            pb=min(1.0,max(0.0,dt/0.12))
+            # whole caption block: slides in from `slide_dir` (default up) while fading in,
+            # decelerating into place — see lettering-motion/references/animation-catalog.md
+            ddx,ddy,ab=entrance(pb,direction=c.get('slide_dir','up'),distance=c.get('slide_px',34))
             for it in c['items']:
                 if it['fl']:
                     pe=min(1.0,max(0.0,(dt-0.03)/0.24))
-                    sc=1.0+0.26*(1-eob(pe)) if pe<1 else 1.0
                     sc=max(0.6,1.26-0.26*eob(pe))
                     al=min(1.0,max(0.0,(dt-0.03)/0.09))
-                    paste(cv,it['tile'],it['cx'],it['cy'],it['ax'],it['ay'],sc*sb,al*ab)
+                    paste(cv,it['tile'],it['cx'],it['cy'],it['ax'],it['ay'],sc,al*ab,ddx,ddy)
                 else:
-                    paste(cv,it['tile'],it['cx'],it['cy'],it['ax'],it['ay'],sb,ab)
+                    paste(cv,it['tile'],it['cx'],it['cy'],it['ax'],it['ay'],1.0,ab,ddx,ddy)
         p.stdin.write(cv.tobytes())
     p.stdin.close(); p.wait()
     return nfr

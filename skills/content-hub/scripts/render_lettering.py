@@ -7,20 +7,11 @@ import subprocess
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+from easing import ease_out_cubic, ease_out_back, slide_offset
+
 W, BAND_H, FPS = 1080, 600, 30
 ORANGE = (255, 116, 0, 255)
 WHITE = (255, 255, 255, 255)
-
-
-def ease_out_cubic(p):
-    return 1.0 - (1.0 - p) ** 3
-
-
-def ease_out_back(p):
-    """Popup with a restrained 2% overshoot and a soft settle."""
-    c1 = 1.15
-    c3 = c1 + 1.0
-    return 1.0 + c3 * (p - 1.0) ** 3 + c1 * (p - 1.0) ** 2
 
 
 def font(size, weight='ExtraBold'):
@@ -194,12 +185,15 @@ def render(clip, outbase):
             side = e.get('popup_side', e.get('side', 'left'))
             base_x = 52 if side == 'left' else W - e['tile'].width - 52
             base_y = int(e.get('popup_y', e.get('y', 52)))
-            rise = (1.0 - ease_out_cubic(enter)) * 34
+            # default 'up' + 34px matches the original hardcoded rise; override via
+            # popup_dir/popup_slide_px in the clip's lettering event when a card needs
+            # to enter from a different side (see lettering-motion/references/animation-catalog.md)
+            slide_dx, slide_dy = slide_offset(enter, e.get('popup_dir', 'up'), e.get('popup_slide_px', 34))
             if base_x < 0 or base_x + e['tile'].width > W:
                 raise ValueError(f"lettering is outside horizontal canvas: {e['text']!r}")
             if base_y < 0 or base_y + e['tile'].height > BAND_H:
                 raise ValueError(f"lettering is outside vertical canvas: {e['text']!r}")
-            paste_scaled(canvas, e['tile'], base_x, base_y + rise, scale, alpha)
+            paste_scaled(canvas, e['tile'], base_x + slide_dx, base_y + slide_dy, scale, alpha)
         proc.stdin.write((canvas or blank).tobytes())
     proc.stdin.close()
     if proc.wait():
