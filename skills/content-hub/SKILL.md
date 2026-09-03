@@ -7,17 +7,31 @@ description: Crie cortes verticais 9:16 para Reels, TikTok e Shorts da Content H
 
 Produza cortes finalizados a partir de vídeos master e seus SRTs, sem misturar identidade ou arquivos de outros clientes.
 
+## Resumo rápido
+
+As ~12 decisões que mais mudam o resultado, condensadas dos 4 documentos de referência. Use isto no dia a dia com um cliente já conhecido; leia o documento completo linkado quando o job for o primeiro desta skill, algo estiver ambíguo, ou o resumo não cobrir o caso.
+
+- **Identidade** ([brand-profile.md](references/brand-profile.md)): logo `assets/logo_content_hub_transparent.png`; laranja `#FF7400` como acento (nunca fundo dominante) + azul `#000249`/`#002C7B`; Montserrat ExtraBold/Black em caixa alta; film burn oficial `assets/film_burn_clean.mp4` em toda troca real de cena.
+- **Capa**: pessoa centralizada (sem cortar olhos/queixo/testa), glow laranja leve, painel editorial azul assimétrico na base, barra laranja, headline curta, logo do lado oposto ao rosto. Nunca repita a composição de outro cliente — comparar contra o registro de assinaturas antes de aprovar.
+- **Lettering**: popup curto em card no canto inferior esquerdo/área negativa, nunca como legenda ampliada. Card responsivo, fonte no tamanho mínimo legível, overflow determinístico é proibido (frase cortada já foi feedback real).
+- **Split-screen**: B-roll no topo, talking head embaixo em escala natural, sem headline entre os painéis; blur estreito + borda azul semitransparente só abaixo. Entrada/saída sempre com film burn oficial — fade já foi rejeitado explicitamente.
+- **B-roll** ([media-policy.md](references/media-policy.md)): valide pelo sentido completo da fala via `semantic-broll-validator`, nunca por palavra-chave isolada; sem candidato forte, prefira talking head ou lettering.
+- **Música**: escolha por corte (não por convidado/episódio), brief emocional, 3–5 candidatas, ducking sob a voz; prioridade é emoção/impacto sem perder inteligibilidade.
+- **Render**: prioridade `speed` — GPU só quando qualidade e bitrate passarem no teto do perfil (ver `video-render-optimizer`).
+- **Fontes de stock aprovadas**: Pexels, Pixabay, Coverr, Mixkit (manual), Wikimedia; ProductionCrate/Videvo só com licença individual confirmada. Nunca YouTube/filmes/séries/pacotes piratas. Pexels falha em queries longas — tente 1–2 palavras de sentido amplo antes de descartar.
+- **Entrega**: uma pasta por nome do convidado; ver [regra de entrega por gravação](#regra-de-entrega-por-gravação) abaixo.
+- **Drive** ([asset-source-catalog.md](references/asset-source-catalog.md)): `02 - Assets` é a fonte canônica — sincronize antes de renderizar e confira `assets/ASSETS_MANIFEST.md`. Nunca suba stock bruto, masters ou proxies no Drive de skills/assets.
+- **Rejeições conhecidas** ([client-content-bible.md](references/client-content-bible.md)): sem fade no split, sem B-roll genérico, sem capa parecida com Bombordo e Boreste, sem áudio metálico/exposição escura/saturação excessiva.
+
 ## Antes de editar
 
 1. Confirme que o trabalho é da Content Hub. Não use esta skill para Autismo Cast ou Bombordo e Boreste.
-2. Leia [references/brand-profile.md](references/brand-profile.md) antes de decidir capa, cores, logo, formato editorial ou organização no Drive.
-3. Leia [references/media-policy.md](references/media-policy.md) antes de pesquisar ou aplicar B-roll, overlay, música ou SFX.
-4. Leia e atualize [references/client-content-bible.md](references/client-content-bible.md) e [references/asset-source-catalog.md](references/asset-source-catalog.md). Estes documentos são memória canônica do cliente e devem acompanhar a skill no Drive.
-5. Leia o SRT como transcrição agrupada em blocos de aproximadamente 15 s. Escolha os momentos pelo texto antes de revisar imagem e enquadramento.
-6. Identifique entrevistador e convidados pelo fluxo da conversa. Os cortes priorizam a fala e a imagem dos convidados; mantenha perguntas apenas quando forem necessárias para contexto.
-7. Verifique os assets entregues para o job. Nunca reutilize logo, patrocinador, vinheta, música, headline ou referência visual de outro cliente.
-8. Antes de renderizar, sincronize `Content Hub/02 - Assets` do Drive com `assets/` local e confira `assets/ASSETS_MANIFEST.md`. O Drive é a fonte canônica dos assets reutilizáveis deste cliente; não use arquivos homônimos de outras skills.
-9. Audite a estrutura com `video-project-structure`. Fontes, trabalho, QA, entregas e manifests precisam estar separados; não mova caminhos ativos sem atualizar jobs.
+2. No primeiro job de um cliente novo (ou sempre que o Resumo rápido acima não cobrir a decisão), leia os 4 documentos de referência por completo: [brand-profile.md](references/brand-profile.md), [media-policy.md](references/media-policy.md), [client-content-bible.md](references/client-content-bible.md) e [asset-source-catalog.md](references/asset-source-catalog.md). Atualize a bíblia e o catálogo quando aprender algo novo — eles são memória canônica do cliente e acompanham a skill no Drive.
+3. Leia o SRT como transcrição agrupada em blocos de aproximadamente 15 s. Escolha os momentos pelo texto antes de revisar imagem e enquadramento.
+4. Identifique entrevistador e convidados pelo fluxo da conversa. Os cortes priorizam a fala e a imagem dos convidados; mantenha perguntas apenas quando forem necessárias para contexto.
+5. Verifique os assets entregues para o job. Nunca reutilize logo, patrocinador, vinheta, música, headline ou referência visual de outro cliente.
+6. Antes de renderizar, sincronize `Content Hub/02 - Assets` do Drive com `assets/` local e confira `assets/ASSETS_MANIFEST.md`. O Drive é a fonte canônica dos assets reutilizáveis deste cliente; não use arquivos homônimos de outras skills.
+7. Audite a estrutura com `video-project-structure`. Fontes, trabalho, QA, entregas e manifests precisam estar separados; não mova caminhos ativos sem atualizar jobs.
 
 ## Regra de entrega por gravação
 

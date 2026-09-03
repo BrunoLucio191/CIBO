@@ -22,6 +22,15 @@ python3 scripts/benchmark_encoder.py --input /path/amostra.mp4 \
 5. Defina a prioridade do job: `speed`, `balanced` ou `size`. A preferência operacional atual é `speed`: hardware vence quando acelera materialmente, respeita o teto absoluto de bitrate/tamanho e fica dentro da tolerância de qualidade.
 6. Refaça o teste quando mudar máquina, versão do FFmpeg, codec, resolução, FPS, perfil de cor ou tipo de conteúdo. Não repita em todo corte se o ambiente e o perfil continuam iguais.
 
+## Cache de benchmark
+
+O script agora impõe a regra do item 6 sozinho, em vez de depender de lembrar entre sessões: ele monta uma *fingerprint* (SHA-256) de dispositivo + versão do FFmpeg + encoders disponíveis + perfil do vídeo (resolução/FPS/codec/pixel format) + prioridade/bitrate/preset do job, e guarda o relatório em `~/.cache/cibo/video-render-optimizer/<fingerprint>.json`.
+
+- Rodar de novo com o mesmo ambiente e perfil devolve o relatório cacheado na hora (`"cache": {"hit": true, ...}`), sem recodificar nada.
+- Qualquer mudança real (máquina, FFmpeg, encoder disponível, resolução/FPS/codec da amostra, prioridade ou bitrate) já muda a fingerprint e força um benchmark novo automaticamente — não precisa decidir manualmente se "mudou o suficiente".
+- Cache expira sozinho em 30 dias (`--max-cache-age-days`), porque driver de GPU e build do FFmpeg podem mudar de comportamento silenciosamente.
+- Use `--no-cache` para forçar um benchmark novo sem tocar no cache (ex.: suspeita de driver problemático).
+
 ## Integração
 
 - Para Reels 1080×1920/30, o padrão inicial é `target 8 Mb/s`, `maxrate 10 Mb/s`, AAC 192 kb/s. Ajuste conforme duração, movimento e limite do destino.

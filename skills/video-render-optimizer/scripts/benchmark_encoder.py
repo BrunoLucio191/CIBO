@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -13,6 +14,8 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+
+DEFAULT_CACHE_DIR = Path.home() / ".cache" / "cibo" / "video-render-optimizer"
 
 
 HW_ENCODERS = (
@@ -115,6 +118,34 @@ def benchmark_one(inp: Path, out: Path, name: str, start: float, seconds: float,
     }
 
 
+def fingerprint(device: dict, encoders: list[str], input_probe: dict, settings: dict) -> str:
+    """Identify an environment + profile combo, not a single render.
+
+    Two runs get the same fingerprint (and can share a cached recommendation)
+    only when device, FFmpeg, available encoders, the sample's video profile
+    (resolution/fps/codec/pixel format) and the job's priority/bitrate/CPU
+    settings all match — exactly the set of things decision-policy.md says
+    should trigger a fresh benchmark.
+    """
+    video_stream = next((s for s in input_probe.get("streams", []) if s.get("codec_type") == "video"), {})
+    payload = {
+        "device": {k: v for k, v in device.items() if k != "ffmpeg"} | {
+            "ffmpeg": device.get("ffmpeg", "").split(" Copyright")[0]
+        },
+        "encoders": sorted(encoders),
+        "profile": {
+            "width": video_stream.get("width"),
+            "height": video_stream.get("height"),
+            "r_frame_rate": video_stream.get("r_frame_rate"),
+            "codec_name": video_stream.get("codec_name"),
+            "pix_fmt": video_stream.get("pix_fmt"),
+        },
+        "settings": settings,
+    }
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+    return digest[:16]
+
+
 def recommend(results: list[dict], maxrate_mbps: float, priority: str) -> dict:
     cpu = next((x for x in results if x.get("ok") and x["encoder"] == "libx264"), None)
     if not cpu:
@@ -150,6 +181,12 @@ def main() -> None:
     ap.add_argument("--priority", choices=("speed", "balanced", "size"), default="speed")
     ap.add_argument("--cpu-preset", default="medium")
     ap.add_argument("--cpu-crf", type=int, default=21)
+    ap.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR,
+                     help="Where cached benchmark reports are kept, one JSON file per fingerprint.")
+    ap.add_argument("--no-cache", action="store_true",
+                     help="Ignore and do not update the cache (always re-benchmark).")
+    ap.add_argument("--max-cache-age-days", type=float, default=30,
+                     help="Cached result older than this is treated as a miss (driver/FFmpeg updates can silently change behavior).")
     args = ap.parse_args()
     if not args.input.is_file():
         ap.error(f"input not found: {args.input}")
@@ -159,6 +196,31 @@ def main() -> None:
     target = f"{args.target_mbps:g}M"
     maxrate = f"{args.maxrate_mbps:g}M"
     bufsize = f"{args.maxrate_mbps * 2:g}M"
+
+    device = device_info()
+    input_probe = ffprobe(args.input)
+    settings = {
+        "target_mbps": args.target_mbps,
+        "maxrate_mbps": args.maxrate_mbps,
+        "priority": args.priority,
+        "cpu_preset": args.cpu_preset,
+        "cpu_crf": args.cpu_crf,
+    }
+    fp = fingerprint(device, selected, input_probe, settings)
+    cache_path = args.cache_dir / f"{fp}.json"
+
+    if not args.no_cache and cache_path.is_file():
+        cached = json.loads(cache_path.read_text(encoding="utf-8"))
+        age_days = (time.time() - cache_path.stat().st_mtime) / 86400
+        if age_days <= args.max_cache_age_days:
+            cached["cache"] = {"hit": True, "fingerprint": fp, "path": str(cache_path), "age_days": round(age_days, 1)}
+            rendered = json.dumps(cached, ensure_ascii=False, indent=2)
+            if args.output_json:
+                args.output_json.parent.mkdir(parents=True, exist_ok=True)
+                args.output_json.write_text(rendered + "\n", encoding="utf-8")
+            print(rendered)
+            return
+
     with tempfile.TemporaryDirectory(prefix="encoder-benchmark-") as tmp:
         results = [
             benchmark_one(args.input, Path(tmp) / f"{name}.mp4", name, args.start, args.seconds,
@@ -166,26 +228,22 @@ def main() -> None:
             for name in selected
         ]
         report = {
-            "device": device_info(),
+            "device": device,
             "input": str(args.input),
-            "input_probe": ffprobe(args.input),
-            "settings": {
-                "seconds": args.seconds,
-                "start": args.start,
-                "target_mbps": args.target_mbps,
-                "maxrate_mbps": args.maxrate_mbps,
-                "priority": args.priority,
-                "cpu_preset": args.cpu_preset,
-                "cpu_crf": args.cpu_crf,
-            },
+            "input_probe": input_probe,
+            "settings": settings | {"seconds": args.seconds, "start": args.start},
             "available_h264_encoders": selected,
             "results": results,
             "recommendation": recommend(results, args.maxrate_mbps, args.priority),
+            "cache": {"hit": False, "fingerprint": fp, "path": str(cache_path)},
         }
     rendered = json.dumps(report, ensure_ascii=False, indent=2)
     if args.output_json:
         args.output_json.parent.mkdir(parents=True, exist_ok=True)
         args.output_json.write_text(rendered + "\n", encoding="utf-8")
+    if not args.no_cache:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(rendered + "\n", encoding="utf-8")
     print(rendered)
 
 
