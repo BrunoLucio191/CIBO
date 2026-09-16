@@ -211,3 +211,13 @@ library instead.
 `outdir/<clip>.mp4` (1 s cover + film burn + clip) and `outdir/capa_<clip>.png`.
 Also hand back the DaVinci `HH:MM:SS:FF` in/out of each source window so the editor
 can find the moment in the master.
+
+## Zoom suave e cortes de gaguejada (aprendido em fernanda-produto)
+
+Padrão de movimento aprovado pelo usuário ("esse zoom ficou muito bom"). Vale propagar para as skills que usam este motor, respeitando a identidade de cada cliente:
+
+- **Zoom de ênfase:** entra em 0,6 s (ease in-out senoidal, +12%) e volta em 4 s, a cada 10–18 s, no começo de frase, só com o falante em tela cheia. Entrada de 0,25 s foi reprovada como "rápida demais".
+- **Centralização:** use crop dinâmico (`crop=w='W/z':h='H/z':x='(W-W/z)/2':y='(H-H/z)*0.38'`) e depois `scale` fixo. `scale(eval=frame)` + `crop=...:'(iw-W)/2'` usa o `iw` da configuração inicial e ancora o zoom no canto: o falante "escorrega" e o zoom parece ir para a esquerda.
+- **Vários zooms:** combine os termos com `max()`. Somar termos que se sobrepõem dobra o zoom.
+- **Corte de gaguejada:** corte de silêncio a silêncio medido no envelope do áudio em passos de 10 ms, não pelos tempos de palavra do Whisper, que deixaram meia sílaba ("q-que"). Esconda o jump cut com um zoom seco de +10% que volta em 3 s. Transcreva o trecho cortado de novo antes do render.
+- **Transições:** coloque entrada e saída de B-roll, burn e SFX no centro de uma pausa real da fala. Um flash com whoosh sobre a palavra retomada soou como "corte cortando palavras". Ferramenta de referência: `fernanda-produto/scripts/find_pauses.py`.

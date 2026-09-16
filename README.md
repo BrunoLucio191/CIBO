@@ -33,6 +33,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | `content-hub` | Cortes verticais da Content Hub — identidade, seleção editorial, tratamento de áudio e transições próprias. |
 | `katia` | Cortes verticais da Katia, com fonte e trilha próprias da cliente. |
 | `autismo-cast` | Cortes verticais do Autismo Cast, com estilo e assets próprios do cliente. |
+| `fernanda-produto` | Vídeos de produto da Fernanda (linha Zeo): Sony S-Log3 deitada → vertical colorizado, corte de bastidores e gaguejadas de silêncio a silêncio, zoom suave, referências Pexels em tela dividida, burn azul, SFX só nas transições e música em faixa separada. |
 | `podcast-reels` | Fluxo genérico de podcast → Reels: legendas Cal Sans, SFX de câmera, abertura com zoom-out e blur, capa com manchete. |
 
 ### Formato e transformação

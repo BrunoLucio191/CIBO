@@ -38,3 +38,14 @@ Read [references/scoring.md](references/scoring.md) before selecting or replacin
 ## Deliverables
 
 Return a per-cut decision table with brief, candidates, weighted score, selected offset, mix level, license status, and rejection reasons. Store item-level attribution or license evidence when required.
+
+## Entregar música e SFX em faixas separadas
+
+O usuário quer poder ajustar o som depois sem novo render. Entregue dois arquivos:
+
+1. **Arquivo editável:** vídeo + **A1 = voz + SFX** (default) + **A2 = música já com ducking** (`sidechaincompress` alimentado pela A1, fades e offset aplicados). Marque as faixas com `-metadata:s:a:0 title="Voz + SFX" -metadata:s:a:1 title="Musica" -disposition:a:0 default -disposition:a:1 0`.
+2. **Cópia para postar:** o mesmo vídeo com `-c:v copy` e A1+A2 mixadas (`amix normalize=0` + `alimiter level=false`). Players e Instagram tocam só a primeira faixa, então o arquivo editável parece "sem música". Avise isso na entrega.
+
+Mudanças só de volume (SFX mais baixo, música mais alta) se resolvem remixando o áudio com `-c:v copy`, em segundos, sem renderizar a imagem de novo. Guarde a trilha de SFX isolada (`sfx_track.wav`) para isso.
+
+Para a música terminar junto com o vídeo, escolha o offset assim: `offset = fim_natural_da_faixa - duração_do_vídeo`. O vídeo começa com a faixa já com energia e acaba na resolução dela, sem fade cortado.

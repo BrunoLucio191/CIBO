@@ -41,3 +41,10 @@ source_url | license | selected_range
 ```
 
 List rejected candidates and the exact semantic reason. Do not report only “not relevant.”
+
+## Lições de entrega (fernanda-produto)
+
+- **Imagem só do mesmo tema é rejeitada.** Um manequim anatômico para "flúor atuando na tireoide e na pineal" e uma ilustração genérica de cérebro para "pineal" foram reprovados ("não tem nada a ver"). Quando só houver imagem genérica, deixe o falante em tela cheia com um zoom de ênfase.
+- **A transição também faz parte da validação.** Posicione entrada, saída e troca de B-roll numa pausa real da fala, medida no envelope do áudio. Uma entrada com flash e whoosh sobre a palavra retomada soou como um corte que engolia palavras.
+- **Pexels sem API key:** a busca e o download direto por `curl` recebem 403 do Cloudflare. Pelo Chrome, um `fetch('/search/videos/<termo>/?orientation=landscape')` dentro da aba do Pexels devolve os slugs/IDs, e `fetch('/video/<slug>/')` devolve os links `videos.pexels.com/.../*sd*` para pré-visualizar. O arquivo em resolução máxima baixa por `curl -L https://www.pexels.com/download/video/<ID>/`.
+- **Mixkit:** a maioria dos clipes relevantes tem *Restricted License* e o gratuito é 720p. Não serve para vídeo comercial em 4K.
