@@ -168,6 +168,69 @@ These all shipped once. Do not rediscover them.
 
 
 
+16. **A imagem desliza de lado numa emenda.** O reenquadramento por deteccao de
+    rosto (`face_crop.py`, na skill `bombordo-boreste`) fechava um recorte por
+    **trecho mantido** em vez de por **plano de camera**: dois keeps do mesmo
+    plano recebiam medianas de rosto diferentes — o falante se mexeu — e o
+    `cropx` pulava de 0.485 para 0.520, ou seja ~46 px numa janela de 608 sobre
+    1920, exatamente em cima de uma emenda onde a camera nunca cortou. Na tela
+    isso le como erro de montagem. Corrigido: as deteccoes sao agrupadas por
+    plano de camera (a comparacao de cena continua valendo tambem na junção
+    entre dois keeps, entao um corte de camera dentro do trecho descartado ainda
+    e detectado) e cada plano recebe um unico recorte. **Regra: `cropx` so pode
+    mudar onde a camera corta de verdade.** A unica excecao aceitavel e trocar de
+    falante dentro de um plano aberto, e mesmo assim so quando a troca cai
+    exatamente sobre uma emenda que ja muda quem fala.
+17. **Uma legenda mostra frase que foi cortada fora.** O mapeamento de cue para
+    trecho mantido usava `if e2-s2>0.12`: bastavam 0,13 s de um cue caírem dentro
+    do keep para o texto **inteiro** dele ir para a tela, mesmo com o audio
+    daquela frase inteiramente descartado. Corrigido: acima de 85% de
+    sobreposicao o cue vai inteiro; abaixo disso so vao as palavras
+    proporcionais ao trecho ouvido; e se nao sobra nada legivel, o atomo e
+    descartado. Note que o snap de silencio move a fronteira em ate ±160 ms
+    depois desse calculo, entao encostar um keep no inicio de um cue vizinho
+    ainda e arriscado — deixe folga.
+18. **`cropx_timeline` tambem existe aqui.** Este motor aceita
+    `cropx_timeline: [[tempo_no_fonte, cropx], ...]` por clipe, portado da
+    `bombordo-boreste`. Use sempre que a gravacao alternar close e plano aberto:
+    com recorte fixo, o plano aberto vira um enquadramento da mesa. Gere a lista
+    com o `face_crop.py` e confira que cada mudanca coincide com um corte de
+    camera.
+
+
+## Caption rhythm: never drop a block
+
+`plan.py` runs a `ritmo()` pass over the finished captions. A one-word block with
+0.15 s reaches 60 characters per second and reads as a flash, not a caption. The
+pass tries, in order: stretch into the silence that follows (free), borrow time
+from the next block and then the previous one (only costs if they are tight too),
+and merge as a last resort (it fattens the line).
+
+**Dropping a block is never an option.** The old code ended with
+`out=[o for o in out if o['e']-o['s']>0.18]`, which silently deleted captions the
+de-overlap step had squeezed to nothing — in real material that removed a whole
+spoken sentence from the screen and left an orphan word behind, with nothing in
+any report to show it had happened. Squeezed blocks now merge into the neighbour
+instead.
+
+Tunable with `MIN_BLOCK` (0.45 s), `MAX_CPS` (20) and `MAX_MERGE_CHARS` (30).
+
+The pass cannot fix everything, and it should not pretend to. When the speaker
+talks faster than the reading limit and no neighbour has slack, a block stays
+above 32 CPS. That is a case for `caption-quality-gate` to flag and for a human
+to decide — better a flagged fast caption than a mutilated sentence.
+
+## Film burn on the way out
+
+`render.py` screen-blends the film burn at the head of every clip. Setting
+`BURN_OUT` to a number of seconds also blends a second copy so its flare lands at
+the very end, which closes the clip instead of letting it just stop. The asset
+peaks 0.53 s in, so `BURN_OUT=0.63` puts the peak on the last frame.
+
+**It ships off (`BURN_OUT=0`) on purpose.** This skill is the engine behind
+several clients; turning an outro burn on by default would change the delivered
+look for clients who never asked for it. Each client skill opts in.
+
 ## Rules that matter
 
 - **Captions align on a shared baseline.** Words are positioned by font ascent, never

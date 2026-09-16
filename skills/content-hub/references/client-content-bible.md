@@ -57,8 +57,12 @@ Cleo Abram, Codie Sanchez, Hayden Hillier-Smith, Jordan Orme, Johnny Harris, Raf
 | 2026-08-28 | popup pequeno e frase cortada | card responsivo, fonte mínima legível e overflow determinístico proibido |
 | 2026-08-28 | erros de legenda passaram no pente-fino | comparação integral com áudio e revisão visual de 100% dos blocos finais |
 | 2026-08-28 | faixa limpa, mas de outra conversa | áudio só passa após correspondência semântica com imagem/SRT; SNR isolado não decide |
+| 2026-09-08 | convidado estrangeiro comete erros de português | a legenda reproduz a fala como dita; só se corrige erro de transcrição, nunca a gramática do convidado |
+| 2026-09-08 | movimento de câmera não desejado | enquadramento estático por bloco; mudança de perto/longe acontece no corte (`zoom_steps`), sem zoom animado |
+| 2026-09-08 | master abaixo de 1080p | cortar na resolução nativa e subir uma única vez no fim; nunca fazer upscale antes do crop |
 
 ## Changelog
 
 - 2026-08-26 — consolidada a direção V4 e as regras de QA/Drive.
 - 2026-08-28 — cobertura integral de captions/popups e trava contra lettering truncado.
+- 2026-09-08 — episódio Thomas (zeólita, Vai Lá e Faz Cast/SPI Búzios): `render.py` passou a derivar a janela 9:16 da altura real do master e ganhou `zoom_steps` (zoom em degraus, cortado, sem animação) mais `cropy`; `face_crop.py` migrou dos classificadores Haar (removidos no OpenCV 5) para o detector YuNet em `assets/yunet.onnx` e ganhou `--prefer left|right` para travar o rastreio no convidado nos planos abertos; `plan.py` deixou de trazer listas fixas de ênfase e de correção de texto que pertenciam a outro cliente (portos/navios/gasolina) — agora `emph` e `fix` vêm apenas do job.

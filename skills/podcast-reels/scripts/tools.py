@@ -29,7 +29,7 @@ def probe(k,t0,t1):
     f=(f"[0:v]trim={t0}:{t1},setpts=PTS-STARTPTS[v];"
        f"[1:v]trim={t0}:{t1},setpts=PTS-STARTPTS,format=yuva420p[c];"
        f"[2:v]trim={t0}:{t1},setpts=PTS-STARTPTS[m];[c][m]alphamerge[cap];"
-       f"[v][cap]overlay=0:810,scale=540:960[vo];"
+       f"[v][cap]overlay=0:{os.environ.get('BAND_Y',810)},scale=540:960[vo];"
        f"[0:a]atrim={t0}:{t1},asetpts=PTS-STARTPTS[ao]")
     sh(f'ffmpeg -y -v error -i "{a}" -i "{cr}" -i "{ca}" -filter_complex "{f}" '
        f'-map "[vo]" -map "[ao]" -c:v libx264 -preset ultrafast -crf 24 -c:a aac "{out}"')

@@ -108,7 +108,7 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
        f"[vv]format=gbrp[vvg];"
        f"[vvg][fbp]blend=all_mode=screen:shortest=1,format=yuv420p[vb];"
        f"[3:v]format=yuva420p[c3];[c3][4:v]alphamerge[capa];"
-       f"[vb][capa]overlay=x=0:y=810:format=auto:eof_action=pass,setsar=1[body];"
+       f"[vb][capa]overlay=x=0:y={os.environ.get('CAP_BAND_Y','810')}:format=auto:eof_action=pass,setsar=1[body];"
        f"[0:a][5:a]amix=inputs=2:duration=first:normalize=0[voice]")
     if music:
         music_db=float(mix.get('music_db',-26))

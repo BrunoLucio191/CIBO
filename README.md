@@ -33,6 +33,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | `content-hub` | Cortes verticais da Content Hub — identidade, seleção editorial, tratamento de áudio e transições próprias. |
 | `katia` | Cortes verticais da Katia, com fonte e trilha próprias da cliente. |
 | `autismo-cast` | Cortes verticais do Autismo Cast, com estilo e assets próprios do cliente. |
+| `dr-energia` | Cortes verticais do Dr. Energia BR Cast: burn-in verde na entrada e saída, proporção de 4 cortes do apresentador para 2 do convidado, entrega a 24 fps. |
 | `fernanda-produto` | Vídeos de produto da Fernanda (linha Zeo): Sony S-Log3 deitada → vertical colorizado, corte de bastidores e gaguejadas de silêncio a silêncio, zoom suave, referências Pexels em tela dividida, burn azul, SFX só nas transições e música em faixa separada. |
 | `podcast-reels` | Fluxo genérico de podcast → Reels: legendas Cal Sans, SFX de câmera, abertura com zoom-out e blur, capa com manchete. |
 
@@ -46,6 +47,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | Skill | O que faz |
 |---|---|
 | `caption-quality-gate` | Pente-fino obrigatório de legendas: fidelidade à fala, timing, quebras, ênfases, legibilidade no render. |
+| `legenda-cruzada` | Confere a legenda queimada retranscrevendo o áudio final com um modelo mais forte (large-v3) e comparando palavra a palavra. |
 | `video-delivery-safety-check` | Checking final antes da entrega: confronta o MP4 com o job esperado, falhas técnicas/visuais/sonoras. |
 | `semantic-broll-validator` | Valida se um B-roll casa com o sentido completo da fala, não só com uma palavra-chave isolada. |
 
@@ -55,6 +57,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | `video-project-structure` | Cria e audita a estrutura fixa de pastas de um projeto de edição (fontes, transcrições, QA, entregas). |
 | `video-render-optimizer` | Detecta CPU/GPU/encoders FFmpeg disponíveis e escolhe o mais eficiente sem perder qualidade perceptível. |
 | `talking-head-music` | Escolhe, compara e mixa trilha de fundo para vídeos de talking head sem atropelar a inteligibilidade da fala. |
+| `clickup-thumb-podcast` | Cria a demanda de thumb de episódio de podcast no ClickUp (ContentHub > Max > Edição) no padrão da equipe; o token fica fora do repositório. |
 
 ## Setup
 

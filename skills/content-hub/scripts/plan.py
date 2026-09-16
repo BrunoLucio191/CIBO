@@ -62,19 +62,15 @@ _OLD={
 }
 
 # ---- text corrections applied to raw SRT text (regex -> replacement) ----
-FIX=[(a,b) for a,b in JOB.get('fix',[])]+[(r'\bBesos\b','berços'),(r'\bserbo\b','sebo'),(r'\bsó da cálcica\b','soda cáustica'),
-     (r'\bquem daí de vocês\b','quem aí de vocês'),(r'\bda granel\b','da Granel'),
-     (r'\bgranel\b','Granel'),(r'\bCoca-Cola\b','Coca-Cola'),(r'\bpo r\b','por'),
-     (r'\bteraprima\b','matéria-prima'),(r'\bvódica\b','vodka'),
-     (r'\bfaço parte\b','faço parte'),(r'Porto, gente','porto, gente'),
-     (r'dentro do Porto','dentro do porto'),(r'\bvai só da cálcica\b','vai soda cáustica'),
-     (r'\bsó da cálcica\b','soda cáustica'),(r'\bEla não tem lá um\b','Ela não tem lá um')]
+# Text corrections come from the job only. The old hardcoded list belonged to a
+# ports episode of another client and rewrote unrelated words here.
+FIX=[(a,b) for a,b in JOB.get('fix',[])]
 
 # words that get the big/impact treatment
-EMPH = set(JOB.get('emph','').split()) | set('''80% mundo portuário portuário. risco risco. altíssimo gasolina moeda moeda?
-banho banho. sabonete sabonete? sebo sebo, cáustica cáustica, coca-cola pigmento vermelha
-navios navios. 42 anos enorme granel granel. econômica econômica. oportunidade oportunidade.
-incidente segurança segurança? líquida líquida.'''.split())
+# Emphasis comes from the job only. The hardcoded list used to carry words from
+# a different client's episode (portos/navios/gasolina), which leaked orange
+# highlights into unrelated jobs.
+EMPH = set(JOB.get('emph','').split())
 
 def norm(w): return re.sub(r'[^0-9a-záàâãéêíóôõúüç%\-]','',w.lower())
 
@@ -107,7 +103,10 @@ def build(name):
     for ls,le,t in g:
         for a,b,off in segs:
             s2,e2=max(ls,a),min(le,b)
-            if e2-s2>0.12:
+            # 0.12s used to be the floor here, which threw away fast one-syllable
+            # words ("não" measured exactly 0.120s and vanished from the caption,
+            # inverting the sentence). Keep them; the merge step makes them legible.
+            if e2-s2>0.02:
                 txt=t
                 for pat,rep in FIX: txt=re.sub(pat,rep,txt,flags=re.I)
                 atoms.append([off+(s2-a),off+(e2-a),txt.strip()])
@@ -163,12 +162,31 @@ def build(name):
     # de-overlap
     for i in range(len(out)-1):
         if out[i]['e']>out[i+1]['s']: out[i]['e']=out[i+1]['s']
-    out=[o for o in out if o['e']-o['s']>0.18 and o['e']<=total+0.05]
+    # A very short cue used to be dropped outright, which silently deleted fast
+    # one-syllable words from the burned captions — including negations ("não"),
+    # inverting the meaning of the sentence. Absorb them into a neighbour instead.
+    out=[o for o in out if o['e']<=total+0.05]
+    merged=[]
+    for o in out:
+        if o['e']-o['s']<=0.18 and (merged or True):
+            host=merged[-1] if merged else None
+            if host is not None and len(host['t'])+1+len(o['t'])<=22:
+                host['t']=(host['t']+' '+o['t']).strip()
+                host['w']=host['t'].split()
+                host['em']=(host['em']+o['em'])[:len(host['w'])]
+                host['any']=any(host['em'])
+                host['e']=max(host['e'],o['e'])
+                continue
+            o=dict(o); o['e']=o['s']+0.19            # keep it, just make it legible
+        merged.append(o)
+    out=merged
     return dict(name=name, filename=c.get('filename',name), src=c['src'], keeps=keeps, total=round(total,3),
                 headline=c['headline'], cropx=c['cropx'], cover_t=c['cover_t'],
                 cover_cropx=c.get('cover_cropx',c.get('cropx',0.5)),
                 cover_logo_side=c.get('cover_logo_side'),
                 cropx_timeline=c.get('cropx_timeline',[]),
+                zoom_steps=c.get('zoom_steps',[]), cropy=c.get('cropy',0.5),
+                cropy_steps=c.get('cropy_steps',[]),
                 grade=c.get('grade',{}), letterings=c.get('letterings',[]),
                 broll=c.get('broll',[]),
                 mix={**JOB.get('mix',{}), **c.get('mix',{})},

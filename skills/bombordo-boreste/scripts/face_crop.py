@@ -40,23 +40,47 @@ def detect_largest(gray, cascades):
     return max(candidates, key=lambda z: z[0])
 
 
-def finalize(shots, start, end, xs, width, crop_width, fallback):
+def finalize(shots, start, end, xs, camera):
+    """Record one analysed segment. The crop is NOT decided here: segments are
+    resolved per camera shot after the whole clip is analysed (see resolve)."""
     if end - start < 1 / 60:
-        return fallback
-    if xs:
-        face_x = float(np.median(xs))
-        cropx = clamp((face_x - crop_width / 2) / (width - crop_width), 0.0, 1.0)
-        confidence = len(xs)
-    else:
-        face_x = None
-        cropx = fallback
-        confidence = 0
-    # Quantization plus one crop per camera shot prevents micro-jitter.
-    cropx = round(cropx / 0.005) * 0.005
+        return
     shots.append(dict(start=round(start, 3), end=round(end, 3),
-                      cropx=round(cropx, 3), face_x=face_x,
-                      detections=confidence))
-    return cropx
+                      camera=camera, xs=list(xs)))
+
+
+def resolve(shots, width, crop_width, fallback):
+    """One crop per CAMERA SHOT, never per edit segment.
+
+    Deciding a crop per kept segment is the bug this function exists to prevent:
+    two consecutive segments of the same camera shot get slightly different face
+    medians (the speaker moved), the crop shifts by tens of pixels at a point
+    where the camera never cut, and the delivered clip visibly slides sideways on
+    an edit splice. Pooling every detection of a camera shot gives that shot a
+    single crop, so the framing can only change where the camera actually cuts.
+    """
+    pooled = {}
+    for shot in shots:
+        pooled.setdefault(shot['camera'], []).extend(shot['xs'])
+    crop_of = {}
+    last = fallback
+    for camera in sorted(pooled):
+        xs = pooled[camera]
+        if xs:
+            face_x = float(np.median(xs))
+            cropx = clamp((face_x - crop_width / 2) / (width - crop_width), 0.0, 1.0)
+        else:
+            face_x, cropx = None, last
+        # Quantization plus one crop per camera shot prevents micro-jitter.
+        cropx = round(round(cropx / 0.005) * 0.005, 3)
+        crop_of[camera] = (cropx, face_x, len(xs))
+        last = cropx
+    for shot in shots:
+        cropx, face_x, detections = crop_of[shot['camera']]
+        shot['cropx'] = cropx
+        shot['face_x'] = face_x
+        shot['detections'] = detections
+        del shot['xs']
 
 
 def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
@@ -72,7 +96,8 @@ def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
     profile = cv2.CascadeClassifier(os.path.join(base, 'haarcascade_profileface.xml'))
     cascades = [(frontal, False), (profile, False), (profile, True)]
     shots = []
-    current_fallback = fallback
+    camera = 0
+    prev_small = None      # carried ACROSS keeps: a trim is not a camera cut
 
     for keep_start, keep_end in keeps:
         cap.set(cv2.CAP_PROP_POS_MSEC, keep_start * 1000)
@@ -80,7 +105,6 @@ def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
         end_frame = int(round(keep_end * fps))
         shot_start = keep_start
         xs = []
-        prev_small = None
         for frame_no in range(start_frame, end_frame):
             ok, frame = cap.read()
             if not ok:
@@ -90,10 +114,16 @@ def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
             small = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
             if prev_small is not None:
                 score = float(cv2.absdiff(prev_small, small).mean())
-                if score >= scene_threshold and t - shot_start >= 0.20:
-                    current_fallback = finalize(
-                        shots, shot_start, t, xs, width, crop_width, current_fallback)
-                    shot_start, xs = t, []
+                # At the first frame of a keep the comparison is against the last
+                # frame of the previous keep, so a discarded stretch that contains
+                # a camera cut is still detected as one — and a plain trim inside
+                # a single shot correctly is not.
+                first_of_keep = frame_no == start_frame
+                if score >= scene_threshold and (first_of_keep or t - shot_start >= 0.20):
+                    if not first_of_keep:
+                        finalize(shots, shot_start, t, xs, camera)
+                        shot_start, xs = t, []
+                    camera += 1
             prev_small = small
             if (frame_no - start_frame) % sample_every == 0:
                 detect_w = min(960, width)
@@ -104,17 +134,18 @@ def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
                 face = detect_largest(gray, cascades)
                 if face:
                     xs.append(face[1] * width / detect_w)
-        current_fallback = finalize(
-            shots, shot_start, keep_end, xs, width, crop_width, current_fallback)
+        finalize(shots, shot_start, keep_end, xs, camera)
     cap.release()
 
-    # Merge adjacent entries only when both the crop and source are continuous.
+    resolve(shots, width, crop_width, fallback)
+
+    # Merge adjacent entries that share a crop. Entries whose crop is equal but
+    # which sit either side of a discarded stretch are merged too: the render
+    # holds the current crop across the gap, so an extra entry would be noise.
     merged = []
     for shot in shots:
-        if (merged and abs(merged[-1]['end'] - shot['start']) < 1 / fps + 1e-3
-                and abs(merged[-1]['cropx'] - shot['cropx']) <= 0.015):
+        if merged and merged[-1]['cropx'] == shot['cropx']:
             merged[-1]['end'] = shot['end']
-            merged[-1]['detections'] += shot['detections']
         else:
             merged.append(shot)
     timeline = [[s['start'], s['cropx']] for s in merged]

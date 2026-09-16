@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import re, json, os, subprocess
 import numpy as np
 
@@ -78,6 +77,62 @@ incidente segurança segurança? líquida líquida.'''.split())
 
 def norm(w): return re.sub(r'[^0-9a-záàâãéêíóôõúüç%\-]','',w.lower())
 
+MINB=float(os.environ.get('MIN_BLOCK','0.45'))   # s: abaixo disso a legenda pisca
+MAXCPS=float(os.environ.get('MAX_CPS','20'))     # caracteres por segundo confortaveis
+MAXMERGE=int(os.environ.get('MAX_MERGE_CHARS','30'))  # ate aqui ainda cabe em duas linhas
+
+def _rebuild(o):
+    ws=o['t'].split()
+    o['w']=ws; o['em']=[norm(w) in EMPH for w in ws]; o['any']=any(o['em'])
+    return o
+
+def ritmo(out,total):
+    """Nenhuma legenda pisca, corre ou some.
+
+    Um bloco de uma palavra com 0,15 s chega a 60 caracteres por segundo e na
+    tela vira flash ilegivel. A ordem de tentativa importa: esticar para dentro
+    do silencio seguinte e de graca; pedir tempo emprestado ao vizinho so custa
+    se ele tambem estiver apertado; fundir e o ultimo recurso, porque engorda a
+    linha. Descartar o bloco nunca e opcao — sumir com a fala do entrevistado e
+    pior que uma legenda apertada, e some sem deixar rastro no relatorio.
+    """
+    def alvo(o): return max(MINB,len(o['t'])/MAXCPS)
+    for _ in range(3):
+        for i in range(len(out)-1,-1,-1):
+            o=out[i]
+            if o['e']-o['s'] >= alvo(o)-1e-3: continue
+            teto=out[i+1]['s'] if i+1<len(out) else total
+            o['e']=min(teto,o['s']+alvo(o))
+            if o['e']-o['s'] >= alvo(o)-1e-3: continue
+            if i+1<len(out):
+                p=out[i+1]; sobra=(p['e']-p['s'])-alvo(p)
+                if sobra>0.02:
+                    d=min(sobra,alvo(o)-(o['e']-o['s'])); p['s']+=d; o['e']+=d
+            if i>0 and o['e']-o['s'] < alvo(o)-1e-3:
+                a=out[i-1]; sobra=(a['e']-a['s'])-alvo(a)
+                if sobra>0.02:
+                    d=min(sobra,alvo(o)-(o['e']-o['s'])); a['e']-=d; o['s']-=d
+            if o['e']-o['s'] >= alvo(o)-1e-3: continue
+            if i>0 and len(out[i-1]['t']+' '+o['t'])<=MAXMERGE:
+                a=out[i-1]; a['t']=a['t']+' '+o['t']; a['e']=max(a['e'],o['e'])
+                _rebuild(a); out.pop(i); continue
+            if i+1<len(out) and len(o['t']+' '+out[i+1]['t'])<=MAXMERGE:
+                p=out[i+1]; o['t']=o['t']+' '+p['t']; o['e']=max(o['e'],p['e'])
+                _rebuild(o); out.pop(i+1)
+    # ninguem invade o vizinho, e ninguem e jogado fora
+    limpo=[]
+    for i,o in enumerate(out):
+        teto=out[i+1]['s'] if i+1<len(out) else total
+        o['e']=min(o['e'],teto)
+        if o['e']-o['s'] < 0.10:
+            if limpo:
+                limpo[-1]['t']+=' '+o['t']; limpo[-1]['e']=max(limpo[-1]['e'],o['e'])
+                _rebuild(limpo[-1])
+            continue
+        limpo.append(o)
+    return limpo
+
+
 def build(name):
     c=CLIPS[name]; mi=c['master_in']
     # local groups
@@ -107,10 +162,23 @@ def build(name):
     for ls,le,t in g:
         for a,b,off in segs:
             s2,e2=max(ls,a),min(le,b)
-            if e2-s2>0.12:
-                txt=t
-                for pat,rep in FIX: txt=re.sub(pat,rep,txt,flags=re.I)
-                atoms.append([off+(s2-a),off+(e2-a),txt.strip()])
+            if e2-s2<=0.12: continue
+            txt=t
+            for pat,rep in FIX: txt=re.sub(pat,rep,txt,flags=re.I)
+            # Only caption what is actually heard. A cue clipped by a keep
+            # boundary used to ship its FULL text as long as 0.12 s of it
+            # survived, so the screen showed a whole sentence the viewer never
+            # hears -- the audio was trimmed away but the caption stayed. When
+            # the kept part is a fraction of the cue, keep the matching fraction
+            # of the words; when nothing legible survives, drop the atom.
+            span=max(1e-6,le-ls); frac=(e2-s2)/span
+            if frac<0.85:
+                ws=txt.split()
+                i0=int(len(ws)*((s2-ls)/span)); i1=int(round(len(ws)*((e2-ls)/span)))
+                ws=ws[i0:max(i0+1,i1)] if i1>i0 else []
+                txt=' '.join(ws)
+                if not txt.strip(): continue
+            atoms.append([off+(s2-a),off+(e2-a),txt.strip()])
     atoms.sort()
     # split any atom whose whole SRT cue already exceeds the caption limit —
     # otherwise a long, unfragmented whisper segment ships as one on-screen
@@ -163,7 +231,8 @@ def build(name):
     # de-overlap
     for i in range(len(out)-1):
         if out[i]['e']>out[i+1]['s']: out[i]['e']=out[i+1]['s']
-    out=[o for o in out if o['e']-o['s']>0.18 and o['e']<=total+0.05]
+    out=[o for o in out if o['e']<=total+0.05]
+    out=ritmo(out,total)
     result=dict(name=name, src=c['src'], keeps=keeps, total=round(total,3),
                 headline=c['headline'], cropx=c['cropx'], cover_t=c['cover_t'], caps=out)
     # pass through any other per-clip job fields (music, mix, filename, logo, ...)

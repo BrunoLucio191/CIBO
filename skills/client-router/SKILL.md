@@ -1,6 +1,6 @@
 ---
 name: client-router
-description: Identifique a que cliente pertence um trabalho de edição antes de aplicar qualquer skill de corte, e trate cada cliente como um fluxo, estilo e conjunto de assets isolado — nunca misture fonte, logo, trilha, SFX ou convenção de capa entre clientes. Use no início de todo job que envolva um cliente com skill própria (Bombordo e Boreste, Content Hub, Katia, Autismo Cast), ou sempre que não estiver claro de qual cliente é o material, antes de escolher a skill de corte.
+description: Identifique a que cliente pertence um trabalho de edição antes de aplicar qualquer skill de corte, e trate cada cliente como um fluxo, estilo e conjunto de assets isolado — nunca misture fonte, logo, trilha, SFX ou convenção de capa entre clientes. Use no início de todo job que envolva um cliente com skill própria (Bombordo e Boreste, Content Hub, Katia, Autismo Cast, Dr. Energia), ou sempre que não estiver claro de qual cliente é o material, antes de escolher a skill de corte.
 ---
 
 # Client Router

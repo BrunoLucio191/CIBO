@@ -27,6 +27,54 @@ Read [references/scoring.md](references/scoring.md) before selecting or replacin
 7. Select an intentional section of the track instead of always starting at 0:00. Record the source offset, music gain, ducking, fades, score, source page, license, author, and hash.
 8. Measure the final mixed file and listen again after AAC encoding. Reconsider the track if the voice feels smaller, the rhythm fights sentence endings, or the conclusion loses impact.
 
+
+## Escolher pela banda da voz, nao pelo genero
+
+A metrica que decide se uma faixa abafa a fala e **quanta energia ela coloca em
+1–4 kHz**, a banda de inteligibilidade. Rotulo de genero, BPM e ate o centroide
+espectral enganam: uma faixa pode ter centroide alto por causa de brilhos
+esparsos e ainda assim deixar a banda da voz livre. Meça antes de decidir:
+
+```python
+# por segundo: energia em 1-4 kHz sobre a energia total, mediana da faixa
+S = np.abs(np.fft.rfft(x.reshape(-1, sr) * np.hanning(sr), axis=1))**2
+fr = np.fft.rfftfreq(sr, 1/sr)
+pct = 100 * np.median(S[:, (fr >= 1000) & (fr <= 4000)].sum(1) / S.sum(1))
+```
+
+Abaixo de ~5% a faixa passa por baixo da voz. Em torno de 15% ha um instrumento
+sentado em cima da fala (piano e guitarra limpa sao os suspeitos de sempre) e a
+faixa deve ser rejeitada, por melhor que soe sozinha.
+
+## O ganho e relativo a loudness da cama, nao um numero fixo
+
+`music_db` nos motores de corte e um ganho relativo ao arquivo de musica. O
+default `-21` supoe uma faixa de acervo em torno de -11 LUFS. Se a cama for
+normalizada antes (por exemplo a -20 LUFS, que e o certo para comparar
+candidatas em igualdade), o mesmo `-21` joga a musica ~30 LU abaixo da voz e ela
+some. Calcule o ganho pelo alvo, nao pelo default:
+
+    music_db = (loudness_alvo_da_musica) - (loudness_da_cama_normalizada)
+
+com a musica caindo **18 a 22 dB abaixo da voz** no material final.
+
+## Conferir por subtracao A/B, nao de ouvido
+
+Renderize o mesmo corte duas vezes, com e sem trilha, e subtraia amostra a
+amostra: o residuo e a musica isolada, ja depois do ducking e do encode. Com ele
+da para medir o que importa:
+
+- voz acima da cama no geral (alvo: 18–22 dB);
+- relacao voz/musica **dentro de 1–4 kHz durante a fala**, segundo a segundo —
+  nenhum segundo deve cair abaixo de 10 dB;
+- quanto a cama sobe nos segundos mais silenciosos, que confirma que o ducking
+  esta soltando em vez de bombear.
+
+Alinhar por correlacao dois renders diferentes nao funciona: sem alinhamento
+exato a subtracao soma as duas copias e devolve um numero maior que o sinal.
+Renderizar os dois pelo mesmo pipeline garante alinhamento por construcao.
+
+
 ## Mixing invariants
 
 - Voice remains the anchor. Duck from the dialogue signal with a moderate attack and a release long enough to avoid pumping between words.

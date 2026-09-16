@@ -22,22 +22,33 @@ def in_keep(t, keeps):
     return any(a <= t < b for a, b in keeps)
 
 
-def detect_largest(gray, cascades):
+def detect_largest(frame, detector, prefer=None):
+    """YuNet DNN detection (OpenCV 5 removed the Haar cascade classifiers)."""
+    height, width = frame.shape[:2]
+    detector.setInputSize((width, height))
+    _, faces = detector.detect(frame)
+    if faces is None:
+        return None
     candidates = []
-    for cascade, mirrored in cascades:
-        image = cv2.flip(gray, 1) if mirrored else gray
-        for x, y, w, h in cascade.detectMultiScale(
-                image, scaleFactor=1.08, minNeighbors=5,
-                minSize=(max(34, gray.shape[1] // 18),) * 2):
-            if mirrored:
-                x = gray.shape[1] - x - w
-            # Podcast faces belong in the upper 78% and should not be tiny props.
-            if y + h / 2 > gray.shape[0] * 0.78:
-                continue
-            candidates.append((w * h, x + w / 2, y + h / 2, w, h))
+    for f in faces:
+        x, y, w, h = float(f[0]), float(f[1]), float(f[2]), float(f[3])
+        # Podcast faces belong in the upper 78% and should not be tiny props.
+        if y + h / 2 > height * 0.78:
+            continue
+        if w < max(24, width / 24):
+            continue
+        candidates.append((w * h, x + w / 2, y + h / 2, w, h))
     if not candidates:
         return None
-    return max(candidates, key=lambda z: z[0])
+    biggest = max(candidates, key=lambda z: z[0])
+    if prefer in ('left', 'right'):
+        # Two-shots put both people in frame; the guest we follow is always on
+        # the same side, so pick that side among the plausibly-sized faces
+        # instead of whichever head happens to be nearer the camera.
+        plausible = [z for z in candidates if z[0] >= biggest[0] * 0.40]
+        return (max(plausible, key=lambda z: z[1]) if prefer == 'right'
+                else min(plausible, key=lambda z: z[1]))
+    return biggest
 
 
 def finalize(shots, start, end, xs, width, crop_width, fallback):
@@ -59,18 +70,21 @@ def finalize(shots, start, end, xs, width, crop_width, fallback):
     return cropx
 
 
-def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
-            fallback=0.5):
+def analyse(src, keeps, crop_width=None, sample_every=5, scene_threshold=18.0,
+            fallback=0.5, prefer=None):
     cap = cv2.VideoCapture(src)
     if not cap.isOpened():
         raise SystemExit(f'cannot open video: {src}')
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    base = cv2.data.haarcascades
-    frontal = cv2.CascadeClassifier(os.path.join(base, 'haarcascade_frontalface_default.xml'))
-    profile = cv2.CascadeClassifier(os.path.join(base, 'haarcascade_profileface.xml'))
-    cascades = [(frontal, False), (profile, False), (profile, True)]
+    if not crop_width:
+        # Derive the 9:16 window from the real source height so sub-1080p
+        # masters are analysed at their native resolution.
+        crop_width = int(round(height * 9 / 16)) // 2 * 2
+    model = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         'assets', 'yunet.onnx')
+    detector = cv2.FaceDetectorYN.create(model, '', (320, 320), 0.55)
     shots = []
     current_fallback = fallback
 
@@ -99,9 +113,7 @@ def analyse(src, keeps, crop_width=608, sample_every=5, scene_threshold=18.0,
                 detect_w = min(960, width)
                 detect_h = round(height * detect_w / width)
                 scaled = cv2.resize(frame, (detect_w, detect_h), interpolation=cv2.INTER_AREA)
-                gray = cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY)
-                gray = cv2.equalizeHist(gray)
-                face = detect_largest(gray, cascades)
+                face = detect_largest(scaled, detector, prefer=prefer)
                 if face:
                     xs.append(face[1] * width / detect_w)
         current_fallback = finalize(
@@ -158,12 +170,14 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--preview')
     ap.add_argument('--scene-threshold', type=float, default=18.0)
+    ap.add_argument('--prefer', choices=['left', 'right'], default=None,
+                    help='side of the frame where the tracked guest sits')
     args = ap.parse_args()
     job = json.load(open(args.job, encoding='utf-8'))
     clip = job['clips'][args.clip]
     src = os.path.join(job['srcdir'], clip['src'])
     result = analyse(src, clip['keeps'], scene_threshold=args.scene_threshold,
-                     fallback=float(clip.get('cropx', 0.5)))
+                     fallback=float(clip.get('cropx', 0.5)), prefer=args.prefer)
     os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
     json.dump(result, open(args.out, 'w', encoding='utf-8'), indent=2)
     if args.preview:

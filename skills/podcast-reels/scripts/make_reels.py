@@ -35,7 +35,7 @@ def run(k):
           lambda: RC.render(c,f'{B}/caps_{k}'))
     stage(f'clicks:{k}',  fp([x['s'] for x in c['caps'] if x.get('any')]), f'{B}/clicks_{k}.wav',
           lambda: CK.build(c,f'{B}/clicks_{k}.wav'))
-    cutkey=fp(c['keeps'],c['cropx'],c['src'])
+    cutkey=fp(c['keeps'],c['cropx'],c.get('cropx_timeline'),c['src'])
     recut=stage(f'cut:{k}', cutkey, f'{B}/A_{k}.mp4', lambda: render.passA(c,f'{B}/A_{k}.mp4'))
     stage(f'intro:{k}',   cutkey, f'{B}/I_{k}.mp4', lambda: render.make_intro(f'{B}/A_{k}.mp4',f'{B}/I_{k}.mp4'))
     stage(f'cover:{k}',   fp(cutkey,c['headline'],c['cover_t']), f'{B}/capa_{k}.png',

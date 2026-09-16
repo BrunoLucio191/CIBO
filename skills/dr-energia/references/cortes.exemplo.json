@@ -1,0 +1,88 @@
+[
+  {
+    "nome": "Corte 1 - Queriam taxar o sol",
+    "quem": "convidado",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 1195.0,
+    "fim": 1243.26,
+    "titulo": [
+      "Queriam taxar",
+      "o sol"
+    ],
+    "musica": "stereo_color-atmospheric-documentary-484731.mp3",
+    "musica_offset": 47,
+    "musica_gain": 0.18
+  },
+  {
+    "nome": "Corte 2 - Eles me pagaram em dinheiro vivo",
+    "quem": "convidado",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 969.06,
+    "fim": 1014.48,
+    "titulo": [
+      "Eles me pagaram",
+      "em dinheiro vivo"
+    ],
+    "musica": "lexin_music-inspiring-cinematic-piano-116957.mp3",
+    "musica_offset": 27,
+    "musica_gain": 0.174
+  },
+  {
+    "nome": "Corte 3 - Quanto vale o seu plantao",
+    "quem": "host",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 2851.16,
+    "fim": 2897.98,
+    "titulo": [
+      "Quanto vale",
+      "o seu plantão?"
+    ],
+    "musica": "mixkit-driving-ambition-32.mp3",
+    "musica_offset": 40,
+    "musica_gain": 0.182
+  },
+  {
+    "nome": "Corte 4 - A bateria trabalha sozinha",
+    "quem": "host",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 598.32,
+    "fim": 641.3,
+    "titulo": [
+      "A bateria trabalha",
+      "sozinha o dia todo"
+    ],
+    "musica": "nastelbom-digital-technology-337601.mp3",
+    "musica_offset": 25,
+    "musica_gain": 0.16,
+    "capa_ini": 621.4,
+    "capa_fim": 641.3
+  },
+  {
+    "nome": "Corte 5 - A molecada vai dominar a energia",
+    "quem": "host",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 3264.48,
+    "fim": 3317.88,
+    "titulo": [
+      "A molecada vai",
+      "dominar a energia"
+    ],
+    "musica": "royaltyfreemusicstudio-hopeful-cinematic-journey-506057.mp3",
+    "musica_offset": 45,
+    "musica_gain": 0.164
+  },
+  {
+    "nome": "Corte 6 - Vinham 50 haters",
+    "quem": "host",
+    "fonte": "2026-09-03 17-37-13.mp4",
+    "ini": 486.22,
+    "fim": 516.56,
+    "titulo": [
+      "Vinham 50 haters",
+      "hoje ninguém fala"
+    ],
+    "musica": "leberch-education-documentary-510725.mp3",
+    "musica_offset": 32,
+    "musica_gain": 0.327
+  }
+]

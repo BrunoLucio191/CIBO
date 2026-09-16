@@ -75,9 +75,32 @@ def color_grade(c):
 
 def passA(c,out):
     keeps=c['keeps']; n=len(keeps); fc=[]
-    cw=608
+    # The 9:16 window is derived from the SOURCE height so masters below 1080p
+    # are cropped at their native resolution and upscaled once, at the end.
+    _dims=sh(f'ffprobe -v error -select_streams v:0 -show_entries stream=height '
+             f'-of csv=p=0 "{os.path.join(SRCDIR,c["src"])}"').strip().split(',')[0]
+    srch=int(float(_dims))//2*2
+    cw=int(round(srch*9/16))//2*2
     timeline=sorted((float(t),float(x)) for t,x in c.get('cropx_timeline',[]))
-    def crop_expr(a,b):
+    # Hard-cut zoom steps: each keep segment gets its own crop window, so the
+    # framing jumps between near and wide on the edit instead of animating.
+    zoom_steps=sorted((float(t),float(z)) for t,z in c.get('zoom_steps',[]))
+    cropy=float(c.get('cropy',0.5))
+    # Per-block vertical framing: when the speaker leans forward his chin drops
+    # into the caption band, and captions must stay below the chin — so the head
+    # is raised for that block instead of moving the text.
+    cropy_steps=sorted((float(t),float(y)) for t,y in c.get('cropy_steps',[]))
+    def cropy_at(a):
+        current=cropy
+        for t,y in cropy_steps:
+            if t<=a+1e-6: current=y
+        return min(1.0,max(0.0,current))
+    def zoom_at(a):
+        current=1.0
+        for t,z in zoom_steps:
+            if t<=a+1e-6: current=z
+        return max(1.0,current)
+    def crop_expr(a,b,cwi):
         current=float(c['cropx']); changes=[]
         for t,x in timeline:
             if t <= a+1e-6: current=x
@@ -87,17 +110,21 @@ def passA(c,out):
         for j in range(len(changes)-1,-1,-1):
             boundary=changes[j][0]
             expr=f'if(lt(t,{boundary:.5f}),{vals[j]:.5f},{expr})'
-        return f'(iw-{cw})*({expr})'
+        return f'(iw-{cwi})*({expr})'
     for i,(a,b) in enumerate(keeps):
         # snap to exact frame boundaries: a fractional-second trim start forces the
         # later `fps={FPS}` filter to duplicate frames to realign, producing a regular
         # every-other-frame stutter that reads as a shake/vibration.
         a=round(a*FPS)/FPS; b=round(b*FPS)/FPS
         d=max(0.2,b-a); N=max(1,int(round(d*FPS))-1)
-        x=crop_expr(a,b)
+        z=zoom_at(a)
+        cwi=int(round(cw/z))//2*2; chi=int(round(srch/z))//2*2
+        x=crop_expr(a,b,cwi)
+        y=int(round((srch-chi)*cropy_at(a)))
         vf=(f"[0:v]trim=start={a}:end={b},setpts=PTS-STARTPTS,"
-            f"crop={cw}:1080:x='{x}':y=0{color_grade(c)},"
-            f"scale={W}:{H}:flags=lanczos,fps={FPS}")
+            f"crop={cwi}:{chi}:x='{x}':y={y}{color_grade(c)},"
+            # zoom steps change the crop size, so normalise SAR or concat refuses
+            f"scale={W}:{H}:flags=lanczos,setsar=1,fps={FPS}")
         fc.append(vf+f"[v{i}]")
         fade_out=0.120 if i==n-1 else 0.020
         fc.append(f"[0:a]atrim=start={a}:end={b},asetpts=PTS-STARTPTS,"

@@ -6,6 +6,10 @@ from PIL import Image, ImageFilter
 
 B=os.environ.get('WORK','.'); SRCDIR=os.environ.get('SRCDIR','.')
 FPS=30; W,H=1080,1920
+# Burn tambem na saida. Desligado por padrao: esta skill e o motor de varios
+# clientes e ligar mudaria a entrega de quem nao pediu. BURN_OUT=0.63 coloca o
+# pico do asset (que estoura em 0,53s) encostado no ultimo quadro.
+BURN_OUT=float(os.environ.get('BURN_OUT','0'))
 INTRO=0.90; Z0=1.26; BLUR0=18.0
 
 def sh(cmd):
@@ -27,6 +31,23 @@ def passA(c,out):
     # only ever crops+lightly-downscales from an already-adequate source instead of upscaling.
     OS=int(H*(1+ZOOM+0.02)); OSW=int(W*(1+ZOOM+0.02))//2*2
     cw=608; x=int((1920-cw)*c['cropx']); x=max(0,min(1920-cw,x))
+    # Reenquadramento por plano de camera. Uma gravacao que alterna close e plano
+    # aberto nao pode usar um recorte fixo: no plano aberto o corte fixo aponta
+    # para o meio da mesa. `cropx_timeline` e uma lista [[tempo_no_fonte, cropx]]
+    # e so pode mudar onde a camera corta de verdade — mudar o recorte numa
+    # emenda dentro do mesmo plano faz a imagem deslizar de lado na tela.
+    timeline=sorted((float(t),float(v)) for t,v in c.get('cropx_timeline',[]))
+    def crop_expr(a,b):
+        if not timeline: return str(x)
+        atual=float(c['cropx']); mudancas=[]
+        for t,v in timeline:
+            if t<=a+1e-6: atual=v
+            elif t<b-1e-6: mudancas.append((t-a,v))
+        vals=[atual]+[v for _,v in mudancas]
+        expr=f'{vals[-1]:.5f}'
+        for j in range(len(mudancas)-1,-1,-1):
+            expr=f'if(lt(t,{mudancas[j][0]:.5f}),{vals[j]:.5f},{expr})'
+        return f"'(iw-{cw})*({expr})'"
     src=f'{SRCDIR}/{c["src"]}'
     base=1+ZOOM+0.02
     fsz=OSW*OS*3
@@ -50,7 +71,7 @@ def passA(c,out):
         zA,zB=(1.0,1.0+ZOOM) if zin else (1.0+ZOOM,1.0)
         nframes=max(1,round((b-a)*FPS))
         dec=subprocess.Popen(['ffmpeg','-v','error','-i',src,'-filter_complex',
-            f'[0:v]trim=start={a}:end={b},setpts=PTS-STARTPTS,crop={cw}:1080:{x}:0,'
+            f'[0:v]trim=start={a}:end={b},setpts=PTS-STARTPTS,crop={cw}:1080:x={crop_expr(a,b)}:y=0,'
             f'scale={OSW}:{OS}:flags=lanczos,format=rgb24[v]','-map','[v]','-f','rawvideo','-'],
             stdout=subprocess.PIPE)
         for k in range(nframes):
@@ -104,11 +125,15 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
     if music: ins+=f' -stream_loop -1 -i "{music}"'
     f=(f"[0:v]trim=start={INTRO},setpts=PTS-STARTPTS[main];"
        f"[1:v][main]concat=n=2:v=1:a=0[vv];"
-       f"[2:v]tpad=stop_mode=add:stop_duration=120:color=black,fps={FPS},format=gbrp[fbp];"
+       f"[2:v]fps={FPS},format=gbrp,split=2[fbA][fbB];"
+       f"[fbA]tpad=stop_mode=add:stop_duration=120:color=black[fb1];"
+       f"[fbB]tpad=start_mode=add:start_duration={max(float(c['total'])-BURN_OUT,0):.3f}:color=black,"
+       f"tpad=stop_mode=add:stop_duration=120:color=black[fb2];"
        f"[vv]format=gbrp[vvg];"
-       f"[vvg][fbp]blend=all_mode=screen:shortest=1,format=yuv420p[vb];"
+       f"[vvg][fb1]blend=all_mode=screen:shortest=1[vb1];"
+       f"[vb1][fb2]blend=all_mode=screen:shortest=1,format=yuv420p[vb];"
        f"[3:v]format=yuva420p[c3];[c3][4:v]alphamerge[capa];"
-       f"[vb][capa]overlay=x=0:y=810:format=auto:eof_action=pass,setsar=1[body];"
+       f"[vb][capa]overlay=x=0:y={os.environ.get('BAND_Y',810)}:format=auto:eof_action=pass,setsar=1[body];"
        f"[0:a][5:a]amix=inputs=2:duration=first:normalize=0[voice]")
     if music:
         music_db=float(mix.get('music_db',-26))

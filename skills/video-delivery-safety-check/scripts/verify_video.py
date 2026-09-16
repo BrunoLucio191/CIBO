@@ -17,6 +17,62 @@ def run(cmd: list[str], check: bool = False) -> subprocess.CompletedProcess[str]
     return subprocess.run(cmd, text=True, capture_output=True, check=check)
 
 
+def cadence(path: Path, duration: float, fps: float) -> dict:
+    """Fracao de frames que carregam imagem nova. MEDIDA, NAO VEREDITO.
+
+    Uma gravacao feita a ~24 fps dentro de um container de 30 fps repete um
+    frame a cada cinco, e o movimento treme sem que codec, fps ou bitrate
+    acusem nada. O problema e que a mesma medida cai igual quando a camera
+    esta travada e ninguem se mexe, que e o normal de um talking head bem
+    enquadrado. Testado nos dois casos, `mpdecimate` deu 0,78 e 0,83 - nao da
+    para separar por limiar, e um aviso automatico aqui so geraria alarme
+    falso. Por isso o numero entra no relatorio como dado para o humano
+    interpretar, comparando o corte com a fonte, e nao como aviso.
+    """
+    total = max(int(round(duration * fps)), 1)
+    proc = run(["ffmpeg", "-hide_banner", "-nostats", "-v", "quiet", "-stats",
+                "-i", str(path), "-vf", "mpdecimate", "-an", "-f", "null", "-"])
+    achados = re.findall(r"frame=\s*(\d+)", proc.stderr)
+    if not achados:
+        return {"unique": None, "total": total, "ratio": None}
+    unique = int(achados[-1])
+    return {"unique": unique, "total": total, "ratio": round(unique / total, 3)}
+
+
+def shots(path: Path, limiar: float = 35.0, debounce: int = 3) -> list[int]:
+    """Planos de camera, pelo mesmo metodo de absdiff usado no reenquadramento.
+
+    O filtro `scene` do ffmpeg nao acusa um corte de crop dentro de um plano
+    continuo, que e exatamente o defeito que aparece quando o reenquadramento
+    automatico salta. Comparar frames reduzidos acusa.
+    """
+    # binario, nao texto: sao pixels crus
+    proc = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path),
+                           "-vf", "scale=160:90,format=gray", "-f", "rawvideo", "-"],
+                          capture_output=True)
+    if proc.returncode:
+        return []
+    import numpy as np  # noqa: PLC0415
+    dados = np.frombuffer(proc.stdout, dtype=np.uint8)
+    n = 160 * 90
+    quadros = dados[:len(dados) // n * n].reshape(-1, n).astype(np.int16)
+    if len(quadros) < 2:
+        return []
+    diff = np.abs(np.diff(quadros, axis=0)).mean(axis=1)
+    # 35 foi calibrado em material real: corte de camera de verdade deu 68 e 89,
+    # enquanto gesto largo e reflexo de luminaria ficaram em 26. Abaixo de 35 a
+    # deteccao enche de falso positivo.
+    picos = [i + 1 for i, d in enumerate(diff) if d >= limiar]
+    # debounce curto de proposito: ele existe so para nao contar duas vezes a
+    # mesma transicao. Com uma janela larga o detector fica cego para o plano
+    # de meio segundo, que e exatamente o defeito que esta checagem procura.
+    agrupado: list[int] = []
+    for i in picos:
+        if not agrupado or i - agrupado[-1] > debounce:
+            agrupado.append(i)
+    return agrupado
+
+
 def probe(path: Path) -> dict:
     proc = run(["ffprobe", "-v", "error", "-show_entries",
                 "format=duration,size,bit_rate,format_name:stream=index,codec_type,codec_name,profile,pix_fmt,width,height,r_frame_rate,avg_frame_rate,bit_rate,color_range,color_space,color_transfer,color_primaries,sample_rate,channels",
@@ -145,6 +201,11 @@ def main() -> None:
     ap.add_argument("--fps", type=float, default=30.0)
     ap.add_argument("--min-video-mbps", type=float, default=1.5)
     ap.add_argument("--max-video-mbps", type=float, default=10.0)
+    ap.add_argument("--check-cadence", action="store_true", default=True,
+                    help="mede frames duplicados (judder herdado da fonte)")
+    ap.add_argument("--no-check-cadence", dest="check_cadence", action="store_false")
+    ap.add_argument("--min-shot", type=float, default=1.2,
+                    help="plano mais curto que isso vira aviso; 0 desliga")
     args = ap.parse_args()
     info = probe(args.video)
     videos = [x for x in info.get("streams", []) if x.get("codec_type") == "video"]
@@ -201,8 +262,26 @@ def main() -> None:
         if len(bright) > len(metrics) * .35: warnings.append({"code": "persistent_overexposure", "frames": bright})
         if len(low_detail) > len(metrics) * .35: warnings.append({"code": "persistent_low_detail_or_blur", "frames": low_detail})
         if len(blocky) > len(metrics) * .35: warnings.append({"code": "possible_macroblocking", "frames": blocky})
+    cadencia = cadence(args.video, duration, actual_fps) if args.check_cadence else None
+    planos = None
+    if args.min_shot > 0:
+        # a capa e os dois burns de transicao contam como corte; ficam de fora
+        margem = 1.0
+        cortes = [c for c in shots(args.video)
+                  if margem < c / actual_fps < duration - margem]
+        limites = [0.0] + [c / actual_fps for c in cortes] + [duration]
+        planos = [round(limites[i + 1] - limites[i], 2) for i in range(len(limites) - 1)]
+        curtos = [{"inicio": round(limites[i], 2), "duracao": planos[i]}
+                  for i in range(len(planos))
+                  if planos[i] < args.min_shot and limites[i] > 0.5
+                  and limites[i + 1] < duration - 0.5]
+        if curtos:
+            warnings.append({"code": "plano_curto", "events": curtos,
+                             "hint": "plano abaixo do minimo costuma ser falso positivo do "
+                                     "reenquadramento, e na tela le como flash"})
     report = {
-        "video": str(args.video), "probe": info, "expected": expected, "hardware_decode": hwaccel(),
+        "video": str(args.video), "probe": info,
+        "cadence": cadencia, "shot_durations": planos, "expected": expected, "hardware_decode": hwaccel(),
         "full_decode_ok": decode.returncode == 0, "loudness": loudness, "black_events": black, "freeze_events": freeze,
         "cover_check": cover_check,
         "errors": errors, "warnings": warnings, "visual_sheet": sheet,

@@ -63,7 +63,7 @@ def run(k):
     brollsig=[]
     for event in c.get('broll',[]):
         p=event['path']; brollsig.append((p,os.path.getsize(p),os.path.getmtime(p)))
-    cutkey=fp(render_rev,c['keeps'],c['cropx'],c.get('cropx_timeline'),c['src'],srcsig,c.get('impact_pulses'),c.get('long_moves'),c.get('grade'),c.get('broll'),brollsig)
+    cutkey=fp(render_rev,c['keeps'],c['cropx'],c.get('cropx_timeline'),c.get('zoom_steps'),c.get('cropy'),c.get('cropy_steps'),c['src'],srcsig,c.get('impact_pulses'),c.get('long_moves'),c.get('grade'),c.get('broll'),brollsig)
     recut=stage(f'cut:{k}', cutkey, f'{B}/A_{k}.mp4', lambda: render.passA(c,f'{B}/A_{k}.mp4'))
     stage(f'intro:{k}',   cutkey, f'{B}/I_{k}.mp4', lambda: render.make_intro(f'{B}/A_{k}.mp4',f'{B}/I_{k}.mp4'))
     cover_key=fp(cover_rev,c['headline'],c['cover_t'],c.get('cover_cropx'),c.get('cover_logo_side'),c.get('keeps'),
