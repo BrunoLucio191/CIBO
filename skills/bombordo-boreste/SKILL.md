@@ -242,6 +242,31 @@ These all shipped once. Do not rediscover them.
     Caught by `video-delivery-safety-check` — verify with `ffprobe -show_entries
     stream=color_range,color_space,color_transfer,color_primaries` on every
     delivered clip, not just a visual spot-check.
+19. **A caption shows a word that isn't in the audible window, right at a keep
+    boundary.** `plan.py` maps captions by intersecting each *SRT cue* (which
+    can merge several words, e.g. `"Instagram quero"` or `"Perfeito. é um"`)
+    against the keep window, then attaches the cue's *entire* text to whatever
+    fraction of time survives the intersection — even when part of that text's
+    audio falls entirely outside the kept window. This bites hardest at a
+    **first-segment start** or **last-segment end** (never silence-snapped, so
+    they can land inside a multi-word cue) and at any **internal seam
+    introduced by reordering `keeps`** (snapping can nudge a boundary a few
+    hundred ms into the next/previous word, dragging a fragment of the
+    adjacent cue's full text along with it — e.g. `"A gente mas pensar..."`
+    where `"A gente"` belongs to the segment that already ended). Caught by a
+    listener, not by `caption-quality-gate` (which only checks timing/CPS, not
+    word-vs-audio correspondence) — `legenda-cruzada`'s cross-check flags some
+    of these as low-confidence "suspeita" items too, but not reliably, since a
+    short garbled fragment can still score as a near-match. To find every
+    instance after changing `keeps`: get word-level timestamps from the
+    `*_whisper_raw.json` (`word_timestamps=True`), map every caption's
+    `[s,e]` back to source time through the segment offsets, and flag any
+    caption word without a same-word hit nearby in source time; separately
+    flag any caption whose `[s,e]` straddles an internal segment boundary in
+    output time. Fix by hand-editing `captions_<clip>.json`: split the
+    straddling caption at the boundary, keeping only the words that actually
+    belong to each side (drop a dangling fragment entirely rather than force
+    it into either neighbour if it doesn't complete a thought on its own).
 
 ## Rules that matter
 
