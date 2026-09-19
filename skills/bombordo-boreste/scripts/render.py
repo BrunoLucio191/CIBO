@@ -69,7 +69,7 @@ def passA(c,out):
         vf=(f"[0:v]trim=start={a}:end={b},setpts=PTS-STARTPTS,"
             f"crop={cw}:1080:x='{x}':y=0,scale={W}:{H}:flags=lanczos,fps={FPS}")
         fc.append(vf+f"[v{i}]")
-        fade_out=0.120 if i==n-1 else 0.020
+        fade_out=float(c.get('fade_out',0.120)) if i==n-1 else 0.020
         fc.append(f"[0:a]atrim=start={a}:end={b},asetpts=PTS-STARTPTS,"
                   f"afade=t=in:st=0:d=0.012,afade=t=out:st={round(b-a-fade_out,3)}:d={fade_out:.3f}[a{i}]")
     fc.append(''.join(f"[v{i}][a{i}]" for i in range(n))+f"concat=n={n}:v=1:a=1[vc][ac]")

@@ -25,6 +25,58 @@ def snap(src,t,win=0.16,mode='both'):
     j=lo+int(np.argmin(e[lo:hi+1]))
     return round(j/100.0,3)
 
+PAUSE_THR=float(os.environ.get('PAUSE_THR','0.02'))   # speech median is ~0.06, room floor ~0.002
+def pause_runs(src,lo,hi,minf=5):
+    """runs of >=50 ms below PAUSE_THR: the only places a cut cannot chop a word"""
+    e=envelope(src); i0=max(0,int(lo*100)); i1=min(len(e),int(hi*100)+1)
+    runs=[]; i=i0
+    while i<i1:
+        if e[i]<PAUSE_THR:
+            j=i
+            while j<i1 and e[j]<PAUSE_THR: j+=1
+            if j-i>=minf: runs.append((i/100.0,j/100.0))
+            i=j
+        else: i+=1
+    return runs
+
+def place(src,t,kind,last=False,fwd=0.6,back=0.45):
+    """Put a cut boundary inside a REAL pause instead of wherever it was authored.
+
+    The old rule (quietest 10 ms frame within +/-160 ms, and never touching the
+    first start / last end) cut words in half whenever no pause sat that close,
+    and the last end also runs under a 120 ms fade-out that ate the tail of the
+    final word. END now completes the word being spoken (next pause after t);
+    START now includes the whole word being spoken (previous pause before t).
+    Returns (t2, info); info['where']=='in_speech' means no pause was found."""
+    runs=pause_runs(src,t-back-0.7,t+fwd+0.7)
+    info=dict(src_t=round(t,3),where='pause',room=None,sil_start=None)
+    inside=[r for r in runs if r[0]-0.005<=t<=r[1]+0.005]
+    runs=[r for r in runs if r[1]-r[0]>=0.08]   # stop-consonant closures inside a word are ~50-70 ms: not a pause
+    if kind=='end':
+        need=0.12 if last else 0.03
+        if inside: r=inside[0]
+        else:
+            nxt=[r for r in runs if t-0.10<=r[0]<=t+fwd]
+            prv=[r for r in runs if t-back<=r[1]<=t+0.02]
+            r=min(nxt,key=lambda r:r[0]) if nxt else (max(prv,key=lambda r:r[1]) if prv else None)
+        if r is None:
+            info['where']='in_speech'; return snap(src,t),info
+        room=r[1]-r[0]
+        lo=r[0]+min(need+0.02,room*0.6)
+        t2=min(max(t,lo),r[1]-0.02) if inside else lo
+        info['room']=round(r[1]-t2,3); info['sil_start']=r[0]
+        return round(t2,3),info
+    if inside:
+        r=inside[0]
+        t2=t if r[1]-t<=0.15 else r[1]-0.06
+        return round(max(r[0],t2),3),info
+    prv=[r for r in runs if t-back-0.15<=r[1]<=t+0.05]
+    nxt=[r for r in runs if t-0.02<=r[0]<=t+fwd]
+    r=max(prv,key=lambda r:r[1]) if prv else (min(nxt,key=lambda r:r[1]) if nxt else None)
+    if r is None:
+        info['where']='in_speech'; return snap(src,t),info
+    return round(max(r[0],r[1]-0.05),3),info
+
 
 import os
 JOB=json.load(open(os.environ['JOB']))
@@ -103,34 +155,35 @@ def ritmo(out,total):
         for i in range(len(out)-1,-1,-1):
             o=out[i]
             if o['e']-o['s'] >= alvo(o)-1e-3: continue
-            teto=out[i+1]['s'] if i+1<len(out) else total
+            teto=min(out[i+1]['s'] if i+1<len(out) else total,o['sg_end'])
             o['e']=min(teto,o['s']+alvo(o))
             if o['e']-o['s'] >= alvo(o)-1e-3: continue
-            if i+1<len(out):
+            if i+1<len(out) and out[i+1]['sg']==o['sg']:
                 p=out[i+1]; sobra=(p['e']-p['s'])-alvo(p)
                 if sobra>0.02:
                     d=min(sobra,alvo(o)-(o['e']-o['s'])); p['s']+=d; o['e']+=d
-            if i>0 and o['e']-o['s'] < alvo(o)-1e-3:
+            if i>0 and out[i-1]['sg']==o['sg'] and o['e']-o['s'] < alvo(o)-1e-3:
                 a=out[i-1]; sobra=(a['e']-a['s'])-alvo(a)
                 if sobra>0.02:
                     d=min(sobra,alvo(o)-(o['e']-o['s'])); a['e']-=d; o['s']-=d
             if o['e']-o['s'] >= alvo(o)-1e-3: continue
-            if i>0 and len(out[i-1]['t']+' '+o['t'])<=MAXMERGE:
+            if i>0 and out[i-1]['sg']==o['sg'] and len(out[i-1]['t']+' '+o['t'])<=MAXMERGE:
                 a=out[i-1]; a['t']=a['t']+' '+o['t']; a['e']=max(a['e'],o['e'])
                 _rebuild(a); out.pop(i); continue
-            if i+1<len(out) and len(o['t']+' '+out[i+1]['t'])<=MAXMERGE:
+            if i+1<len(out) and out[i+1]['sg']==o['sg'] and len(o['t']+' '+out[i+1]['t'])<=MAXMERGE:
                 p=out[i+1]; o['t']=o['t']+' '+p['t']; o['e']=max(o['e'],p['e'])
                 _rebuild(o); out.pop(i+1)
     # ninguem invade o vizinho, e ninguem e jogado fora
     limpo=[]
     for i,o in enumerate(out):
-        teto=out[i+1]['s'] if i+1<len(out) else total
+        teto=min(out[i+1]['s'] if i+1<len(out) else total,o['sg_end'])
         o['e']=min(o['e'],teto)
         if o['e']-o['s'] < 0.10:
-            if limpo:
+            if limpo and limpo[-1]['sg']==o['sg']:
                 limpo[-1]['t']+=' '+o['t']; limpo[-1]['e']=max(limpo[-1]['e'],o['e'])
                 _rebuild(limpo[-1])
-            continue
+                continue
+            o['e']=min(o['sg_end'],o['s']+0.10)
         limpo.append(o)
     return limpo
 
@@ -143,11 +196,17 @@ def build(name):
         if le<=0: continue
         g.append([ls,le,t])
     # keep-map: source time -> final time
-    K=c['keeps']; keeps=[]
+    K=c['keeps']; keeps=[]; audit=[]; fade_last=None
+    exact=bool(c.get('exact_edges',False))   # opt-out: first start / last end exactly as authored
     for i,(a,b) in enumerate(K):
-        a2=a if i==0 else snap(c['src'],a)
-        b2=b if i==len(K)-1 else snap(c['src'],b)
+        first=(i==0); last=(i==len(K)-1)
+        xb=set(c.get('exact_bounds',[]))          # e.g. ["3:start"]: keep this one exactly as authored
+        a2,ia=(a,dict(src_t=a,where='exact')) if ((exact and first) or f'{i}:start' in xb) else place(c['src'],a,'start')
+        b2,ib=(b,dict(src_t=b,where='exact')) if ((exact and last) or f'{i}:end' in xb) else place(c['src'],b,'end',last=last)
         keeps.append((a2,b2))
+        audit.append(dict(seg=i,edge='start',to=a2,**ia)); audit.append(dict(seg=i,edge='end',to=b2,**ib))
+        if last and ib.get('sil_start') is not None:
+            fade_last=round(max(0.03,min(0.12,b2-ib['sil_start']-0.005)),3)
     keeps=[(a,b) for a,b in keeps if b-a>0.25]
     c=dict(c); c['keeps']=keeps
     segs=[]; acc=0.0
@@ -161,7 +220,7 @@ def build(name):
     # caption atoms: split groups by keep windows
     atoms=[]
     for ls,le,t in g:
-        for a,b,off in segs:
+        for si,(a,b,off) in enumerate(segs):
             s2,e2=max(ls,a),min(le,b)
             if e2-s2<=0.12: continue
             txt=t
@@ -179,15 +238,15 @@ def build(name):
                 ws=ws[i0:max(i0+1,i1)] if i1>i0 else []
                 txt=' '.join(ws)
                 if not txt.strip(): continue
-            atoms.append([off+(s2-a),off+(e2-a),txt.strip()])
+            atoms.append([off+(s2-a),off+(e2-a),txt.strip(),si])
     atoms.sort()
     # split any atom whose whole SRT cue already exceeds the caption limit —
     # otherwise a long, unfragmented whisper segment ships as one on-screen
     # wall of text instead of the intended short auto-wrapped captions.
     _split=[]
-    for a0,a1,txt in atoms:
+    for a0,a1,txt,sg in atoms:
         if len(txt)<=18:
-            _split.append([a0,a1,txt]); continue
+            _split.append([a0,a1,txt,sg]); continue
         words=txt.split(); chunks=[]; cur=[]; curlen=0
         for w in words:
             wl=len(w)+(1 if cur else 0)
@@ -201,7 +260,7 @@ def build(name):
         for i,chunk in enumerate(chunks):
             frac=len(chunk)/total_chars
             c_end=a1 if i==len(chunks)-1 else t+dur*frac
-            _split.append([t,c_end,chunk]); t=c_end
+            _split.append([t,c_end,chunk,sg]); t=c_end
     atoms=_split
     # merge into <=18 char captions
     caps=[]
@@ -210,25 +269,26 @@ def build(name):
             p=caps[-1]
             cand=(p[2]+' '+a[2]).replace('  ',' ').strip()
             cand=re.sub(r'\s+([,.?!])',r'\1',cand)
-            if len(cand)<=18 and a[0]-p[1]<0.30 and (a[1]-p[0])<2.2:
+            if len(cand)<=18 and a[0]-p[1]<0.30 and (a[1]-p[0])<2.2 and a[3]==p[3]:
                 p[1]=a[1]; p[2]=cand; continue
-        caps.append([a[0],a[1],a[2]])
+        caps.append([a[0],a[1],a[2],a[3]])
     # second pass: absorb tiny orphan captions
     i=1
     while i<len(caps):
-        if len(caps[i][2])<=4 and caps[i-1][1]-caps[i-1][0]<2.6 and len((caps[i-1][2]+' '+caps[i][2]))<=18:
+        if caps[i][3]==caps[i-1][3] and len(caps[i][2])<=4 and caps[i-1][1]-caps[i-1][0]<2.6 and len((caps[i-1][2]+' '+caps[i][2]))<=18:
             caps[i-1][1]=caps[i][1]; caps[i-1][2]=(caps[i-1][2]+' '+caps[i][2]).strip(); caps.pop(i); continue
         i+=1
     # tidy + emphasis
     out=[]
-    for s,e,t in caps:
+    segend=[off+(b-a) for a,b,off in segs]
+    for s,e,t,sg in caps:
         t=re.sub(r'\s+',' ',t).strip().strip('-').strip()
         t=re.sub(r'\.\.\.$','...',t)
         if not t: continue
         if e-s<0.30: e=s+0.30
         for pat,rep in FIX: t=re.sub(pat,rep,t)
         ws=t.split(); flags=[norm(w) in EMPH for w in ws]
-        out.append(dict(s=round(s,3),e=round(e,3),t=' '.join(ws),w=ws,em=flags,any=any(flags)))
+        out.append(dict(s=round(s,3),e=round(e,3),t=' '.join(ws),w=ws,em=flags,any=any(flags),sg=sg,sg_end=segend[sg]))
     # de-overlap
     for i in range(len(out)-1):
         if out[i]['e']>out[i+1]['s']: out[i]['e']=out[i+1]['s']
@@ -237,13 +297,15 @@ def build(name):
     # sem deixar rastro. O passe de ritmo estica, empresta tempo ou funde.
     out=[o for o in out if o['e']<=total+0.05]
     out=ritmo(out,total)
+    for o in out: o.pop('sg',None); o.pop('sg_end',None)
     result=dict(name=name, filename=c.get('filename',name), src=c['src'], keeps=keeps, total=round(total,3),
                 headline=c['headline'], cropx=c['cropx'], cover_t=c['cover_t'],
                 cropx_timeline=c.get('cropx_timeline',[]),
                 mix={**JOB.get('mix',{}), **c.get('mix',{})},
                 music=c.get('music'), impact_pulses=c.get('impact_pulses',[]),
                 long_moves=c.get('long_moves',[]),
-                click_times=c.get('click_times',[]), caps=out)
+                click_times=c.get('click_times',[]), caps=out,
+                cut_audit=audit, fade_out=c.get('fade_out',fade_last if fade_last is not None else 0.06))
     # repassa qualquer outro campo do job (logo, filename novo, ...) sem
     # descartar em silencio config que esta funcao nao conhece
     for key,val in c.items():
