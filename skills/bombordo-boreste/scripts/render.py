@@ -176,7 +176,9 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
         vopts=(f'-c:v h264_videotoolbox -b:v {bitrate} -maxrate {maxrate} '
                f'-bufsize {bufsize} -profile:v high -allow_sw 0 -realtime 1 '
                f'-prio_speed 1 -pix_fmt nv12 '
-               f'-color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv')
+               f'-color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv '
+               # VideoToolbox ignores the flags above in the bitstream VUI: write it explicitly
+               f'-bsf:v h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0')
     else:
         vopts=(f'-c:v libx264 -preset {preset} -crf {crf} -pix_fmt yuv420p '
                f'-x264-params "colorprim=bt709:transfer=bt709:colormatrix=bt709:fullrange=off" '

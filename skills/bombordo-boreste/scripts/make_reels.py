@@ -36,6 +36,10 @@ def _cut_report(only):
                 bad+=1; print(f"!! CORTE NO MEIO DA FALA: {k} seg{a['seg']} {a['edge']} em {a['to']:.2f}s (nenhuma pausa por perto)",flush=True)
             elif abs(a['to']-a['src_t'])>0.02 and a['where']=='pause':
                 print(f"   corte ajustado p/ pausa: {k} seg{a['seg']} {a['edge']} {a['src_t']:.2f}->{a['to']:.2f}",flush=True)
+        for a,b in P[k]['keeps']:
+            for t,x in P[k].get('cropx_timeline',[]):
+                if a+0.02<t<=a+0.8:
+                    print(f"!! ENQUADRAMENTO: {k} trecho começa em {a:.2f}s mas a troca de crop está em {t:.2f}s — os primeiros {t-a:.2f}s usam o crop do plano anterior. Mova a marcação para a troca real de câmera (<= {a:.2f}).",flush=True)
     if bad and os.environ.get('STRICT_CUTS')=='1': raise SystemExit('STRICT_CUTS: cortes no meio da fala')
 _cut_report(sys.argv[1:] or list(JOB['clips']))
 import render, cover, clicks as CK, render_caps as RC

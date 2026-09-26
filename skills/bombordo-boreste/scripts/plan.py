@@ -39,43 +39,39 @@ def pause_runs(src,lo,hi,minf=5):
         else: i+=1
     return runs
 
-def place(src,t,kind,last=False,fwd=0.6,back=0.45):
-    """Put a cut boundary inside a REAL pause instead of wherever it was authored.
+def place(src,t,kind,last=False,reach=0.35):
+    """Put a cut boundary inside the pause nearest to where it was authored.
 
-    The old rule (quietest 10 ms frame within +/-160 ms, and never touching the
-    first start / last end) cut words in half whenever no pause sat that close,
-    and the last end also runs under a 120 ms fade-out that ate the tail of the
-    final word. END now completes the word being spoken (next pause after t);
-    START now includes the whole word being spoken (previous pause before t).
-    Returns (t2, info); info['where']=='in_speech' means no pause was found."""
-    runs=pause_runs(src,t-back-0.7,t+fwd+0.7)
+    Authored boundaries usually already sit at a word boundary, so the search is
+    LOCAL (+/-reach): jumping to a longer pause further away used to swallow the
+    next sentence's first words ("Porque ele viu.") or drop the last word of the
+    thought ("Quando."). END prefers the gap at/after t (finish the word), START
+    the gap at/before t (include the whole word). Returns (t2, info);
+    info['where']=='in_speech' means there is no gap within reach: the author
+    must fix that boundary (or set exact_bounds) -- it is reported, not hidden."""
+    runs=[r for r in pause_runs(src,t-reach-0.3,t+reach+0.3,minf=4)]
     info=dict(src_t=round(t,3),where='pause',room=None,sil_start=None)
-    inside=[r for r in runs if r[0]-0.005<=t<=r[1]+0.005]
-    runs=[r for r in runs if r[1]-r[0]>=0.08]   # stop-consonant closures inside a word are ~50-70 ms: not a pause
     if kind=='end':
+        cand=[r for r in runs if r[1]>=t-0.02 and r[0]<=t+reach]
+        if not cand:   # only a pause ending just before t: backing off further would chop the last word
+            cand=[r for r in runs if t-0.10<=r[1]<t]
+        if not cand:
+            info['where']='in_speech'; return round(t,3),info
+        r=min(cand,key=lambda r:(0 if r[0]<=t+0.02 and r[1]>=t else 1, abs(r[0]-t)))
         need=0.12 if last else 0.03
-        if inside: r=inside[0]
-        else:
-            nxt=[r for r in runs if t-0.10<=r[0]<=t+fwd]
-            prv=[r for r in runs if t-back<=r[1]<=t+0.02]
-            r=min(nxt,key=lambda r:r[0]) if nxt else (max(prv,key=lambda r:r[1]) if prv else None)
-        if r is None:
-            info['where']='in_speech'; return snap(src,t),info
-        room=r[1]-r[0]
-        lo=r[0]+min(need+0.02,room*0.6)
-        t2=min(max(t,lo),r[1]-0.02) if inside else lo
+        t2=r[0]+min(need+0.02,(r[1]-r[0])*0.6)
+        if r[0]<=t<=r[1]: t2=min(max(t,t2),r[1]-0.02)
         info['room']=round(r[1]-t2,3); info['sil_start']=r[0]
         return round(t2,3),info
-    if inside:
-        r=inside[0]
-        t2=t if r[1]-t<=0.15 else r[1]-0.06
-        return round(max(r[0],t2),3),info
-    prv=[r for r in runs if t-back-0.15<=r[1]<=t+0.05]
-    nxt=[r for r in runs if t-0.02<=r[0]<=t+fwd]
-    r=max(prv,key=lambda r:r[1]) if prv else (min(nxt,key=lambda r:r[1]) if nxt else None)
-    if r is None:
-        info['where']='in_speech'; return snap(src,t),info
-    return round(max(r[0],r[1]-0.05),3),info
+    cand=[r for r in runs if r[0]<=t+0.02 and r[1]>=t-reach]
+    if not cand:   # only a pause starting just after t: moving further in would chop the first word
+        cand=[r for r in runs if t<r[0]<=t+0.10]
+    if not cand:
+        info['where']='in_speech'; return round(t,3),info
+    r=min(cand,key=lambda r:(0 if r[0]<=t<=r[1]+0.02 else 1, abs(r[1]-t)))
+    t2=max(r[0],r[1]-0.04)
+    if r[0]<=t<=r[1]: t2=max(r[0],min(t,r[1]-0.02))
+    return round(t2,3),info
 
 
 import os

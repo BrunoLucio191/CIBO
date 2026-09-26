@@ -69,7 +69,21 @@ Before editing, read and update `references/client-content-bible.md` and `refere
    *clip-local* seconds). Before rendering, generate and visually review a
    shot-aware `cropx_timeline` with `face_crop.py`; never assume one crop fits every
    camera in a clip.
-5. **Run it:**
+5. **Polish captions against the real audio (mandatory after any keeps change):**
+   ```bash
+   JOB=job.json python3 scripts/asr_polish.py --beats
+   ```
+   Re-transcribes every kept segment with large-v3 AND turbo (no domain prompt —
+   a "ports" prompt turned "no ponto" into "no porto"), fixes punctuation/casing,
+   drops edge phantoms / adds audible edge words only when both models agree,
+   never touches acronyms or `emph` terms (both models hear "CCO" as "social"),
+   and re-places clicks/zooms on emphasised captions (they are output-time and go
+   stale when keeps move). Everything else lands in `asr_polish_report.json` —
+   read it; one-model disagreements are decided by an isolated no-prompt check.
+   `make_reels.py` also warns when a `cropx_timeline` change sits just after a
+   keep start (the first frames would keep the previous shot's crop — ep4 showed
+   an empty shelf for 0.5 s).
+6. **Run it:**
    ```bash
    JOB=job.json python3 scripts/make_reels.py            # all clips
    JOB=job.json python3 scripts/make_reels.py corte01    # one clip
