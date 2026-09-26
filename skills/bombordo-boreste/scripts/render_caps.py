@@ -7,8 +7,10 @@ from easing import entrance, ease_out_back
 
 import os
 FONT=os.environ['FONT']
-W=1080; BAND_H=420; BAND_Y=810     # band top in the 1920-tall frame
-CY=1020-BAND_Y                      # caption center inside band
+W=1080; BAND_H=420; BAND_Y=810     # default band top in the 1920-tall frame
+CY=BAND_H//2                        # caption block is centred in the band; the band itself
+                                    # moves per clip (clip['cap_cy']) so captions sit below the chin
+LINE_PITCH=1.04                     # baseline-to-baseline, x size of the lower line's biggest word
 FPS=30
 BASE=74; EMPH=100; LINE_GAP=1.12
 MAXW=W-150
@@ -64,15 +66,18 @@ def build_caption(words,flags):
     for ln in lines:
         ws=[(w,s,fl)+draw_word(w,s) for w,s,fl in ln]
         L.append(ws)
-    # vertical block: baseline per line
-    asc=[max(x[7] for x in ws) for ws in L]
-    des=[max(x[8] for x in ws) for ws in L]
-    gap=int(max(max(s for _,s,_,_,_,_,_,_,_ in ws) for ws in L)*0.16)
-    total=sum(a+d for a,d in zip(asc,des))+gap*(len(L)-1)
-    top=CY-total/2.0
-    items=[]; y=top
+    # vertical block: tight leading. The old code stacked full font ascent+descent
+    # (accent headroom included) plus a gap, which put ~1.85x the font size between
+    # two lines and read as two separate captions.
+    msz=[max(s for _,s,_,_,_,_,_,_,_ in ws) for ws in L]
+    bls=[0.0]
+    for i in range(1,len(L)): bls.append(bls[-1]+msz[i]*LINE_PITCH)
+    top_rel=bls[0]-msz[0]*0.72; bot_rel=bls[-1]+msz[-1]*0.22
+    shift=CY-(top_rel+bot_rel)/2.0
+    bls=[b+shift for b in bls]
+    items=[]
     for i,ws in enumerate(L):
-        bl=y+asc[i]
+        bl=bls[i]
         width=sum(x[6] for x in ws)+sp*(len(ws)-1)
         x=(W-width)/2.0
         for (w,s,fl,tile,ox,oy,aw,a2,d2) in ws:
@@ -82,7 +87,6 @@ def build_caption(words,flags):
                               ax=ox+aw/2.0, ay=oy-capH/2.0,
                               cx=x+aw/2.0,  cy=bl-capH/2.0, fl=fl))
             x+=aw+sp
-        y=bl+des[i]+gap
     return items
 
 def eob(p,s=1.55): return 1+(s+1)*(p-1)**3+s*(p-1)**2

@@ -124,7 +124,7 @@ def final(c,passa,intro,out,cover=None,preset='veryfast',crf=21,extra=''):
        f"[vv]setsar=1,format=gbrp[vvg];"
        f"[vvg][fbp]blend=all_mode=screen:shortest=1,format=yuv420p[vb];"
        f"[3:v]format=yuva420p[c3];[c3][4:v]alphamerge[capa];"
-       f"[vb][capa]overlay=x=0:y=810:format=auto:eof_action=pass,setsar=1,"
+       f"[vb][capa]overlay=x=0:y={int(c.get('cap_cy',1020))-210}:format=auto:eof_action=pass,setsar=1,"
        f"fade=t=out:st={fade_start:.6f}:d={OUTRO_FADE:.6f},format=yuv420p[bodyfade];"
        f"color=c=black:s={W}x{H}:r={FPS}:d={OUTRO_BLACK:.6f},setsar=1,format=yuv420p[endblack];"
        f"[bodyfade][endblack]concat=n=2:v=1:a=0[body];"

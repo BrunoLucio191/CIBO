@@ -83,6 +83,14 @@ Before editing, read and update `references/client-content-bible.md` and `refere
    `make_reels.py` also warns when a `cropx_timeline` change sits just after a
    keep start (the first frames would keep the previous shot's crop — ep4 showed
    an empty shelf for 0.5 s).
+   **Caption height:** captions must never cover a face. After the cut exists, run
+   `python3 scripts/safe_zone.py <work>/A_<clip>.mp4` and put the returned centre in
+   `job.clips.<clip>.cap_cy` (band = cap_cy±210; ep4 landed at 1218–1380, the old
+   fixed 1020 sat on chins and beards). Two-line captions use tight leading
+   (`LINE_PITCH` in render_caps.py) — the old ascent+descent stacking read as two captions.
+   **Cover frame:** run `python3 scripts/cover_pick.py [clip]` and choose `cover_t`
+   from `<work>/cover_cands_<clip>.jpg` (frontal, eyes open, composed mouth). A round
+   second picked blind landed on profiles, blinks and mid-word mouths.
 6. **Run it:**
    ```bash
    JOB=job.json python3 scripts/make_reels.py            # all clips
