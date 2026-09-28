@@ -96,6 +96,10 @@ Before editing, read and update `references/client-content-bible.md` and `refere
    guest's introduction, filmed frontal and smiling — with
    `job.clips.<clip>.cover_from = {"src": master, "t": s, "x0": crop x}`; it gets a
    subtle edge-preserving skin/light retouch (`cover_retouch_amount`, default 0.35).
+   Find those moments with `python3 scripts/cover_pick.py --master <master.mp4>`
+   (genuine smiles: strict smile + teeth + eyes open, whole episode). Approved by the
+   client: a real smile with eyes open, or a soft smile in a slight 3/4 turn. Rejected:
+   mid-word mouths, raised eyebrows, a serious/sad face, a flat straight-on close-up.
 6. **Run it:**
    ```bash
    JOB=job.json python3 scripts/make_reels.py            # all clips
