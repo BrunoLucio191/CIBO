@@ -91,6 +91,11 @@ Before editing, read and update `references/client-content-bible.md` and `refere
    **Cover frame:** run `python3 scripts/cover_pick.py [clip]` and choose `cover_t`
    from `<work>/cover_cands_<clip>.jpg` (frontal, eyes open, composed mouth). A round
    second picked blind landed on profiles, blinks and mid-word mouths.
+   The cover must make the guest look good. If every frame inside the cut is a
+   profile (ep4: Juliana), take the still from anywhere in the episode — usually the
+   guest's introduction, filmed frontal and smiling — with
+   `job.clips.<clip>.cover_from = {"src": master, "t": s, "x0": crop x}`; it gets a
+   subtle edge-preserving skin/light retouch (`cover_retouch_amount`, default 0.35).
 6. **Run it:**
    ```bash
    JOB=job.json python3 scripts/make_reels.py            # all clips

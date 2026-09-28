@@ -74,7 +74,7 @@ def run(k):
     cutkey=fp(c['keeps'],c['cropx'],c.get('cropx_timeline'),c['src'],c.get('impact_pulses'),c.get('long_moves'),c.get('fade_out'))
     recut=stage(f'cut:{k}', cutkey, f'{B}/A_{k}.mp4', lambda: render.passA(c,f'{B}/A_{k}.mp4'))
     stage(f'intro:{k}',   cutkey, f'{B}/I_{k}.mp4', lambda: render.make_intro(f'{B}/A_{k}.mp4',f'{B}/I_{k}.mp4'))
-    stage(f'cover:{k}',   fp(cutkey,c['headline'],c['cover_t']), f'{B}/capa_{k}.png',
+    stage(f'cover:{k}',   fp(cutkey,c['headline'],c['cover_t'],c.get('cover_from'),c.get('cover_retouch'),open(cover.__file__,encoding='utf-8').read()), f'{B}/capa_{k}.png',
           lambda: cover.build(c,f'{B}/A_{k}.mp4',f'{B}/capa_{k}.png'))
     basename=c.get('filename',k)
     out=os.path.join(JOB.get('outdir',B),f'{basename}.mp4'); os.makedirs(os.path.dirname(out) or '.',exist_ok=True)
@@ -83,7 +83,7 @@ def run(k):
                      preset=JOB.get('preset','veryfast'),crf=JOB.get('crf',21),
                      extra=JOB.get('extra_v',''))
         import shutil; shutil.copy(f'{B}/capa_{k}.png',os.path.join(JOB.get('outdir',B),f'CAPA - {basename}.png'))
-    stage(f'final:{k}', fp(render_rev,clickkey,cutkey,CAPS,c['headline'],c['cover_t'],os.environ['FILMBURN'],c.get('music'),c.get('mix'),
+    stage(f'final:{k}', fp(render_rev,clickkey,cutkey,CAPS,c['headline'],c['cover_t'],c.get('cover_from'),c.get('cap_cy'),os.environ['FILMBURN'],c.get('music'),c.get('mix'),
                            os.environ['VIDEO_ENCODER'],os.environ['VT_BITRATE'],os.environ['VT_MAXRATE'],os.environ['VT_BUFSIZE'],
                            JOB.get('preset'),JOB.get('crf'),JOB.get('extra_v')), out, _final)
     print(k,'DONE ->',out,flush=True)

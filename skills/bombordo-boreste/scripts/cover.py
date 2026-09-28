@@ -20,8 +20,29 @@ def fit(txt,maxw,start=104):
         s-=3
     return ImageFont.truetype(FONT,s),s
 
+def grab_from(cf):
+    """Cover still from ANY moment of the episode, not only from inside the cut:
+    the flattering frontal smile is often in the guest's introduction, while the cut
+    itself only shows her in profile. cf={'src': video, 't': s, 'x0': crop x (px of
+    the 1920 source)}; crops the same 608x1080 window the reels use, scales to 1080x1920."""
+    raw=subprocess.run(['ffmpeg','-v','error','-ss',str(cf['t']),'-i',cf['src'],'-frames:v','1',
+                        '-vf',f"crop=608:1080:{int(cf.get('x0',656))}:0,scale={W}:{H}:flags=lanczos",
+                        '-f','rawvideo','-pix_fmt','rgb24','-'],capture_output=True).stdout
+    return Image.frombytes('RGB',(W,H),raw[:W*H*3])
+
+def retouch(im,amount=0.35):
+    """Subtle, natural: edge-preserving skin smoothing blended at `amount`, a touch of light."""
+    import numpy as np, cv2
+    a=np.asarray(im).copy()
+    sm=cv2.bilateralFilter(a,9,40,9)
+    a=cv2.addWeighted(a,1-amount,sm,amount,0)
+    a=np.clip(a.astype(np.float32)*1.04+3,0,255).astype(np.uint8)
+    return Image.fromarray(a)
+
 def build(c,src,out):
-    im=grab(src,c['cover_t']).convert('RGB')
+    cf=c.get('cover_from')
+    im=(grab_from(cf) if cf else grab(src,c['cover_t'])).convert('RGB')
+    if c.get('cover_retouch',bool(cf)): im=retouch(im,float(c.get('cover_retouch_amount',0.35)))
     # vignette / bottom scrim
     sc=Image.new('L',(1,H))
     for y in range(H):
