@@ -24,12 +24,14 @@ H.264 CRF 18 yuv420p, mesma resolução/fps; o **áudio é copiado do vídeo ori
 - `blocks_<corte>.json` — blocos na tela; mova palavras, troque `hl` (destaque), `small`
   (palavra pequena acima do destaque) e `preset`. Depois de editar, rode `render` (não `segment`).
 - `kinetic.yaml` (ao lado do job.json) — sobrescreve qualquer parâmetro abaixo, no geral ou
-  por corte em `videos.<corte>`; `videos.<corte>.highlights` fixa os destaques por sentido.
+  por corte em `videos.<corte>`; `videos.<corte>.highlights` fixa os destaques por sentido;
+  `proper: [nomes]` mantém a maiúscula de nomes próprios (empresa, porto, convidado).
 
 ## Parâmetros (`config.yaml`)
 - `font`, `supersample` — fonte da sessão; renderiza em 2x e reduz (bordas limpas em movimento).
 - `size.base` — tamanho base (px em 1080x1920). `highlight_scale` 1.8–2.2. `max_width` mantém
-  o texto fora da coluna de botões. `line_pitch` entrelinha. `max_lines` 2. `highlight_lead_gap` — espaço entre a palavra pequena e o destaque grande logo abaixo.
+  o texto fora da coluna de botões — vale também para os destaques: um destaque longo fica
+  numa linha até 1.5x e depois quebra em duas linhas grandes (nunca estoura a largura). `line_pitch` entrelinha. `max_lines` 2. `highlight_lead_gap` — espaço entre a palavra pequena e o destaque grande logo abaixo.
 - `color.base` / `active` — cor normal e da palavra sendo falada. `glow` / `glow_strength` —
   brilho do destaque. `shadow_*` — a mesma sombra da legenda estática.
 - `position.band_height` — altura da faixa animada, centrada em `cap_cy` (abaixo do queixo,

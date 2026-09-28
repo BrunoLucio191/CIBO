@@ -9,6 +9,7 @@ blocks in a row. A destaque is shown alone and big; a leading function word
 Output: <work>/kinetic/blocks_<clip>.json (editable: move words, flip `hl`, change `preset`).
 """
 import os, re
+from collections import Counter
 from common import norm, kdir, jload, jsave
 
 FUNC = set('o a os as um uma uns umas de do da dos das em no na nos nas num numa por pelo pela pelos pelas à às '
@@ -75,25 +76,44 @@ def score(words, i, emph):
     return s
 
 
-PROPER = set('larissa juliana daniel tegram itaqui sindop sindomar cco tdah inpasa loginpex sousa frazao brasil'.split())
+PROPER = set('larissa juliana daniel tegram itaqui sindop sindomar cco tdah inpasa loginpex sousa frazao brasil '
+             'wilson sons vale petrobras antaq emap alumar suzano maranhao sao luis'.split())
+
+NOT_NAME = set('eu ele ela eles elas você vocês voce voces nós nos isso isto aquilo então entao aí ai mas foi era é '
+               'não nao sim olha cara tipo hoje depois quando porque'.split())
 
 
-def display(words):
+def display(words, proper=()):
     """On-screen text: punctuation is used to split blocks, not shown (only ? and !);
-    mid-sentence capitals left by whisper fragments ("Com TDAH", "Fazer.") go lower-case."""
-    prev_end = True
+    mid-sentence capitals left by whisper fragments ("Com TDAH", "Fazer.") go lower-case.
+    A capital is KEPT (it is a name) when the word is in PROPER / kinetic.yaml `proper`,
+    when it is capitalised mid-sentence 2+ times and never written lower-case in the clip
+    ("entrei na Wilson"), or when it touches another mid-sentence capital ("Wilson Sons")."""
+    names = PROPER | {norm(p) for p in proper}
+    # sentence openers the SRT capitalises without a full stop ("na Wilson / Eu trabalhei")
+    opener = lambda raw: is_func(raw) or low(raw) in NOT_NAME
+    core_of = lambda raw: raw.rstrip('.,;:…')
+    mid, prev_end = [], True
     for w in words:
-        raw = w['w']; core = raw.rstrip('.,;:…')
-        if core and core[0].isupper() and not prev_end and norm(core) not in PROPER and not core.isupper():
+        c = core_of(w['w']); mid.append(bool(c) and c[0].isupper() and not prev_end and not c.isupper())
+        prev_end = bool(PUNCT_END.search(w['w']))
+    lower_seen = {low(w['w']) for w in words if core_of(w['w'])[:1].islower()}
+    caps_mid = Counter(low(w['w']) for w, m in zip(words, mid) if m)
+    for i, w in enumerate(words):
+        raw = w['w']; core = core_of(raw)
+        if mid[i] and not opener(raw):
+            pair = any(0 <= j < len(words) and mid[j] and not opener(words[j]['w']) for j in (i - 1, i + 1))
+            if norm(core) in names or pair or (caps_mid[low(raw)] >= 2 and low(raw) not in lower_seen):
+                w['d'] = core; continue
+        if mid[i] and norm(core) not in names:
             core = core[0].lower() + core[1:]
         w['d'] = core if core else raw
-        prev_end = bool(PUNCT_END.search(raw))
     return words
 
 
 def build(job, work, clip, cfg):
     W = jload(os.path.join(kdir(work), f'words_{clip}.json'))
-    words = display(W['words'])
+    words = display(W['words'], cfg.get('proper', []))
     emph = set(norm(x) for x in job.get('emph', '').split())
     blocks = base_blocks(words, cfg)
     cand = []

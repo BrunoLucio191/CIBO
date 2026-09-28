@@ -139,8 +139,15 @@ What the client approved, and what failed before it did:
   garbled text ("a m*falou*supervisora").
 - A block shorter than ~0.35 s on screen is a flash: fold it into the next block.
 - On screen only "?" and "!" (punctuation still splits blocks); whisper's mid-sentence capitals
-  are lowered, proper nouns/acronyms kept (`PROPER` in segment.py).
+  are lowered, but names keep theirs: `PROPER` in segment.py + `proper:` in kinetic.yaml, any word
+  capitalised mid-sentence 2+ times and never lower-case in the clip, and adjacent capitals
+  ("Wilson Sons" had gone out as "wilson sons" — add the guest's company/port names to `proper`).
 - Band centred on the clip's `cap_cy` (below the chin), width 760 px (clear of the Reels buttons).
+  **Every** block must fit 760 px, destaques included: a long destaque stays on one line down to
+  1.5x, then stacks in two big lines ("presidente / mais novo"), never a lopsided "24 / funcionários";
+  the entry zoom is capped at the frame width. A font-size floor once let "presidente mais novo"
+  and "supervisora de operações" run edge to edge, cut off under the buttons — after render-all,
+  check the widest destaques of every clip, not only the 8 s preview.
 - Punch-in 4% on each destaque (`punch_in.enabled` to switch off) — the cut is re-rendered for it.
 
 ## Choosing `keeps`

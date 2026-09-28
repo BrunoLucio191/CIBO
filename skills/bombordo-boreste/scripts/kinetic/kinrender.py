@@ -50,14 +50,32 @@ def layout(block, cfg, T, S, BH):
     base = int(cfg['size']['base'] * S); maxw = cfg['size']['max_width'] * S; pitch = cfg['size']['line_pitch']
     ws = block['words']
     if block['kind'] == 'highlight':
-        big = int(base * cfg['size']['highlight_scale'])
+        # the big unit stays on ONE line down to ~1.5x base; past that it stacks in two
+        # big lines ("presidente / mais novo") instead of shrinking to a normal caption.
+        # It must ALWAYS fit max_width: a clamped font size let 3-word destaques run to
+        # the screen edges (under the Instagram buttons)
         unit = [w for w in ws if not w['small']]; lead = [w for w in ws if w['small']]
-        while True:
-            f = T.font(big); widths = [f.getlength(w['w']) for w in unit]
-            tot = sum(widths) + big * 0.28 * (len(unit) - 1)
-            if tot <= maxw or big <= base * 1.4: break
-            big = int(big * 0.94)
-        lines = ([(lead, int(base * 0.8))] if lead else []) + [(unit, big)]
+        top_px = int(base * cfg['size']['highlight_scale']); one_min = base * 1.5
+        def wid(seq, px):
+            f = T.font(px); return sum(f.getlength(w['w']) for w in seq) + px * 0.28 * (len(seq) - 1)
+        big = top_px
+        while wid(unit, big) > maxw and big * 0.94 >= one_min: big = int(big * 0.94)
+        if wid(unit, big) <= maxw or len(unit) == 1:
+            while wid(unit, big) > maxw: big = int(big * 0.94)
+            rows = [unit]
+        else:
+            k = min(range(1, len(unit)), key=lambda k: max(wid(unit[:k], top_px), wid(unit[k:], top_px)))
+            rows = [unit[:k], unit[k:]]
+            ws2 = sorted(wid(r, top_px) for r in rows)
+            if ws2[0] / ws2[1] < 0.45 and wid(unit, base * 1.2) <= maxw:
+                # lopsided stack ("24 / funcionários") reads worse than a smaller single line
+                rows = [unit]
+                while wid(unit, big) > maxw: big = int(big * 0.94)
+            else:
+                big = top_px
+                while max(wid(r, big) for r in rows) > maxw: big = int(big * 0.94)
+        lines = ([(lead, int(base * 0.8))] if lead else []) + [(r, big) for r in rows]
+        roles = (['lead'] if lead else []) + ['big'] * len(rows)
     else:
         size = base
         while True:
@@ -68,21 +86,24 @@ def layout(block, cfg, T, S, BH):
             if best and max(wid(ws[:best]), wid(ws[best:])) <= maxw:
                 lines = [(ws[:best], size), (ws[best:], size)]; break
             size = int(size * 0.94)
+        roles = ['text'] * len(lines)
     bls = [0.0]
     for i in range(1, len(lines)):
-        if block['kind'] == 'highlight':
+        if roles[i - 1] == 'lead':
             # small word stacked on the big one: gap = big cap height + a little air,
             # not the big line's full leading (that read as two separate captions)
             bls.append(bls[-1] + lines[i][1] * 0.72 + lines[i - 1][1] * cfg['size'].get('highlight_lead_gap', 0.22))
+        elif roles[i] == 'big':
+            bls.append(bls[-1] + lines[i][1] * 0.92)
         else:
             bls.append(bls[-1] + lines[i][1] * pitch)
     top = bls[0] - lines[0][1] * 0.72; bot = bls[-1] + lines[-1][1] * 0.22
     shift = BH / 2 - (top + bot) / 2
-    placed = []
+    placed = []; block['width'] = 0.0
     for (seq, px), bl in zip(lines, bls):
         f = T.font(px); sp = px * 0.28
         tot = sum(f.getlength(w['w']) for w in seq) + sp * (len(seq) - 1)
-        x = W * S / 2 - tot / 2
+        x = W * S / 2 - tot / 2; block['width'] = max(block['width'], tot)
         for w in seq:
             a = f.getlength(w['w'])
             placed.append(dict(w=w, px=px, x=x, bl=bl + shift, cx=x + a / 2, cy=bl + shift - px * 0.36))
@@ -199,9 +220,11 @@ def render(blocks_json, cfg, total, out_prefix, t0=0.0, t1=None):
                 off_y = tile['base'] - tile['cap'] / 2 - img.shape[0] / 2
                 # destaque scales as a GROUP around the block centre (per-word scaling made
                 # "7 de setembro" collide into "7 desetembro" mid-zoom); normal words scale alone
-                gsc = bsc * en['scale'] if b['kind'] == 'highlight' else bsc
+                # the zoom-in never pushes a wide destaque past the frame edges
+                esc = min(en['scale'], max(1.0, 0.96 * W * S / max(1.0, b['width'])))
+                gsc = bsc * esc if b['kind'] == 'highlight' else bsc
                 wcx = bcx + (pl['cx'] - bcx) * gsc; wcy = bcy + (pl['cy'] - bcy) * gsc
-                sc = bsc * en['scale']
+                sc = bsc * (esc if b['kind'] == 'highlight' else en['scale'])
                 cx = wcx - off_x * sc + en['dx'] * S
                 cy = wcy - off_y * sc + (en['dy'] + idy + ex['dy']) * S
                 blur = en['blur'] if en['blur'] > ex['blur'] else ex['blur']
