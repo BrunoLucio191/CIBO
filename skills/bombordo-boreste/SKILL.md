@@ -1,6 +1,6 @@
 ---
 name: bombordo-boreste
-description: Crie cortes verticais 9:16 para Reels, TikTok e Shorts do podcast Bombordo e Boreste, usando o estilo, os assets e o fluxo de edição próprios deste cliente. Use somente em trabalhos do Bombordo e Boreste.
+description: Crie cortes verticais 9:16 para Reels, TikTok e Shorts do podcast Bombordo e Boreste, usando o estilo, os assets e o fluxo de edição próprios deste cliente — legenda estática ou animada (kinetic typography palavra por palavra), capa com o convidado sorrindo e legenda abaixo do queixo. Use somente em trabalhos do Bombordo e Boreste.
 ---
 
 # Bombordo e Boreste → Reels
@@ -105,6 +105,43 @@ Before editing, read and update `references/client-content-bible.md` and `refere
    JOB=job.json python3 scripts/make_reels.py            # all clips
    JOB=job.json python3 scripts/make_reels.py corte01    # one clip
    ```
+
+## Animated captions (kinetic typography) — `scripts/kinetic/`
+
+Approved by the client on ep4 (EP 3 on YouTube). Replaces the static caption band with a
+frame-by-frame animated layer; the rest of the pipeline (cut, intro, burn, cover, music) is
+unchanged. Python (Pillow + NumPy + OpenCV, 2x supersampling), not Remotion/ASS/drawtext:
+real directional blur, easing and springs per frame, no new toolchain. See
+`scripts/kinetic/README.md` for every parameter.
+
+```bash
+K=scripts/kinetic/cli.py
+JOB=job.json python3 $K align                     # word timing: large-v3 word timestamps on the cut's
+                                                  #   voice, aligned to the reviewed captions, onset-snapped
+JOB=job.json python3 $K segment                   # 1-4 word blocks + destaques (editable JSON)
+JOB=job.json python3 $K preview corte02 --dur 8   # preview + contact sheet: SHOW IT AND WAIT FOR OK
+JOB=job.json python3 $K render-all                # H.264 CRF 18 into job.kinetic_outdir, original
+                                                  #   deliverable's audio copied untouched (-c:a copy)
+```
+
+What the client approved, and what failed before it did:
+- Word-by-word entry ~1.5 frame before the sound (slide + directional blur + fade + 0.9→1 scale);
+  the word being spoken turns brand blue `#4F95FF`, spoken words return to white.
+- Destaques chosen **by meaning** (`kinetic.yaml` → `videos.<clip>.highlights`, in speech order):
+  the central point, numbers, emotion, strong verbs. The automatic scorer picked "falou",
+  "ainda", "mas enfim" — keep it only as a draft. ~1 destaque every 3–4 blocks.
+- A destaque pops in as **one unit** and scales as a **group** (word-by-word left "7" hanging
+  at the line's edge; per-word scaling collided into "7 desetembro"). A leading article or
+  preposition rides small above it, **tight** (`highlight_lead_gap` 0.22 × small size — the
+  big line's full leading read as two captions).
+- The previous block must be gone before the next appears in the same spot: exit ends at the
+  next entry and shortens (≥70 ms) when speech is continuous. Overlapping exit/entry read as
+  garbled text ("a m*falou*supervisora").
+- A block shorter than ~0.35 s on screen is a flash: fold it into the next block.
+- On screen only "?" and "!" (punctuation still splits blocks); whisper's mid-sentence capitals
+  are lowered, proper nouns/acronyms kept (`PROPER` in segment.py).
+- Band centred on the clip's `cap_cy` (below the chin), width 760 px (clear of the Reels buttons).
+- Punch-in 4% on each destaque (`punch_in.enabled` to switch off) — the cut is re-rendered for it.
 
 ## Choosing `keeps`
 

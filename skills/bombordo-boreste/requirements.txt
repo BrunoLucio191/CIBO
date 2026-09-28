@@ -1,2 +1,5 @@
 opencv-python
 Pillow
+numpy
+PyYAML
+mlx-whisper

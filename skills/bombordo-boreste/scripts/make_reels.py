@@ -65,8 +65,16 @@ def run(k):
     click_rev=fp(open(CK.__file__,encoding='utf-8').read())
     # fingerprint the caption DATA before render_caps decorates it with PIL objects
     CAPS=fp([{a:b for a,b in x.items() if a!='items'} for x in c['caps']])
-    stage(f'caps:{k}',   fp(CAPS,JOB.get('style')), [f'{B}/caps_{k}_rgb.mp4',f'{B}/caps_{k}_a.mp4'],
-          lambda: RC.render(c,f'{B}/caps_{k}'))
+    if c.get('caption_engine')=='kinetic':
+        # kinetic typography layer (kinetic/): word-timed blocks, presets, 2x supersampling
+        sys.path.insert(0,os.path.join(HERE,'kinetic')); import kinrender, anim as KA
+        BLK=json.load(open(c['kinetic_blocks'],encoding='utf-8'))
+        CAPS=fp(BLK,c['kinetic_cfg'],open(kinrender.__file__,encoding='utf-8').read(),open(KA.__file__,encoding='utf-8').read())
+        stage(f'caps:{k}', CAPS, [f'{B}/caps_{k}_rgb.mp4',f'{B}/caps_{k}_a.mp4'],
+              lambda: kinrender.render(BLK,c['kinetic_cfg'],float(c['total']),f'{B}/caps_{k}'))
+    else:
+        stage(f'caps:{k}',   fp(CAPS,JOB.get('style')), [f'{B}/caps_{k}_rgb.mp4',f'{B}/caps_{k}_a.mp4'],
+              lambda: RC.render(c,f'{B}/caps_{k}'))
     clickkey=fp(click_rev,c.get('click_times'),[x['s'] for x in c['caps'] if x.get('any')],
                 os.environ['CLICK'],os.environ['CLICK_GAIN'])
     stage(f'clicks:{k}',  clickkey, f'{B}/clicks_{k}.wav',

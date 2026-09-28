@@ -1,0 +1,62 @@
+# Kinetic captions — defaults. Override per video under `videos:` (job clip key).
+font: CalSans-Regular.ttf          # resolved against the skill assets/ folder
+supersample: 2                     # render at 2x, downscale: clean edges in motion
+
+size:
+  base: 74                         # px at 1080x1920 (the session's caption size)
+  highlight_scale: 2.0             # destaque = 1.8..2.2 x base
+  max_width: 760                   # px; keeps text clear of the Reels button column
+  line_pitch: 1.04                 # baseline-to-baseline x size of the lower line
+  max_lines: 2
+  highlight_lead_gap: 0.22          # air between the small word and the big destaque below it (x small size)
+
+color:
+  base: "#FFFFFF"
+  active: "#4F95FF"                # word being spoken (brand blue)
+  glow: "#4F95FF"                  # destaque glow
+  shadow_alpha: 195                # same shadow as the static captions
+  shadow_blur: 0.13                # x size
+  shadow_offset: 0.05              # x size, downwards
+  highlight_shadow_alpha: 235
+  glow_strength: 0.55              # 0..1, destaque only
+
+position:
+  band_height: 560                 # px band overlaid at cap_cy - band_height/2
+  safe_bottom: 250                 # px at the bottom that must stay empty
+  safe_x: [160, 920]               # usable columns
+
+timing:                            # seconds
+  lead: 0.05                       # word appears ~1.5 frame before its sound
+  enter: 0.22                      # 180..250 ms
+  exit: 0.15                       # 120..180 ms
+  color_fade: 0.08                 # active <-> base colour transition
+  hold_after: 0.35                 # block stays this long after its last word if nothing follows
+  min_block: 0.45                  # a block is never on screen for less than this
+
+motion:
+  slide_px: 45                     # 30..60
+  blur_px: 12                      # motion blur at the start of the entry, eases to 0
+  enter_scale_from: 0.90
+  exit_scale_to: 0.95
+  exit_push_px: 30                 # old block drifts up as it leaves
+  idle_scale: 0.02                 # micro-movement while visible (1.00 -> 1.02)
+  idle_drift_px: 3
+  spring: {stiffness: 260, damping: 18}   # destaque pop, slight overshoot
+
+presets:
+  normal: [slide_blur, drop_blur, mask_reveal]   # rotated with criterion, slide_blur is the anchor
+  highlight: [pop_spring, zoom_blur]            # never the same one twice in a row
+
+segmentation:
+  max_words: 4
+  max_chars: 22
+  pause_break: 0.28                # a silence longer than this ends a block
+  highlight_every: 2.7             # target: one destaque every 2..3 blocks
+  min_blocks_between_highlights: 1
+
+punch_in:
+  enabled: true
+  amount: 0.04                     # 3..5 %
+  duration: 0.9
+
+videos: {}                         # e.g. corte02: {size: {base: 70}, punch_in: {enabled: false}}
