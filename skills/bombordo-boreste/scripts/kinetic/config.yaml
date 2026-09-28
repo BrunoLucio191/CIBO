@@ -54,9 +54,15 @@ segmentation:
   highlight_every: 2.7             # target: one destaque every 2..3 blocks
   min_blocks_between_highlights: 1
 
-punch_in:
+punch_in:                          # zoom no vídeo em cada destaque (scripts/punch.py)
   enabled: true
-  amount: 0.04                     # 3..5 %
-  duration: 0.9
+  amount: 0.05                     # 100% -> 105% (0.04..0.06)
+  ramp: 0.40                       # s de cada rampa, entrada e volta (0.30..0.45)
+  bezier: [0.33, 0, 0.67, 1]       # Easy Ease do Premiere; y fora de [0,1] = overshoot (recusado)
+  hold: highlight                  # segura enquanto o destaque está na tela; volta com a mesma curva
+  min_hold: 0.40                   # s mínimos parado em 105% (subir e já descer = quique)
+  min_rest: 0.30                   # s mínimos em 100% entre dois zooms; menos que isso, segura direto
+  subframes: 16                    # motion blur da rampa: média de N subframes (mínimo 16)
+  shutter: 360                     # graus; 360 = o intervalo inteiro do frame, centrado
 
 videos: {}                         # e.g. corte02: {size: {base: 70}, punch_in: {enabled: false}}

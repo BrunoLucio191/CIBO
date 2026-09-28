@@ -148,7 +148,17 @@ What the client approved, and what failed before it did:
   the entry zoom is capped at the frame width. A font-size floor once let "presidente mais novo"
   and "supervisora de operações" run edge to edge, cut off under the buttons — after render-all,
   check the widest destaques of every clip, not only the 8 s preview.
-- Punch-in 4% on each destaque (`punch_in.enabled` to switch off) — the cut is re-rendered for it.
+- Punch-in on each destaque (`punch_in`, engine `scripts/punch.py`), approved after the client
+  said the old one "looked like a spring" (zoompan + a sin pulse: straight up and back down,
+  crop rounded to whole pixels). Now Premiere keyframes: Easy Ease `cubic-bezier(0.33,0,0.67,1)`
+  (y outside [0,1] is refused — no overshoot), scale interpolated in log space, 0.40 s ramps,
+  100% → 105%, same curve back. Holds while the destaque is on screen, at least 0.4 s; a
+  return must rest 0.3 s at 100% before the next rise, else it holds through (dip-and-back
+  also reads as a bounce). Motion blur only on the zoom: 360° shutter, each moving frame =
+  mean of 16 subframes over the whole frame interval, centred; frames at rest are untouched.
+  Works on yuv420p planes (no colour drift). The job's `long_moves` run on the same curve.
+  The cover is grabbed from the frame saved BEFORE the zoom (`A_<clip>_clean_cover.mkv`).
+  Preview one zoom with `preview <clip> --start <t> --dur 4`, then `render-all --out <new dir>`.
 
 ## Choosing `keeps`
 

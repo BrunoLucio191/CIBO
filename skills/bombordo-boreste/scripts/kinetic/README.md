@@ -45,4 +45,10 @@ H.264 CRF 18 yuv420p, mesma resolução/fps; o **áudio é copiado do vídeo ori
   `presets.highlight` — `pop_spring`, `zoom_blur`, alternados (nunca o mesmo duas vezes seguidas).
 - `segmentation` — `max_words`, `max_chars`, `pause_break` (pausa que fecha bloco),
   `highlight_every` (alvo: 1 destaque a cada 2–3 blocos), `min_blocks_between_highlights`.
-- `punch_in.enabled` / `amount` / `duration` — zoom leve no vídeo em cada destaque (desligável).
+- `punch_in` — zoom no vídeo em cada destaque (`scripts/punch.py`), como keyframes do Premiere:
+  `amount` (0.05 = 105%), `ramp` (s de cada rampa, 0.30–0.45), `bezier` (Easy Ease
+  0.33,0,0.67,1; y fora de [0,1] = overshoot, recusado), `hold: highlight` (segura enquanto o
+  destaque está na tela), `min_hold` (parada mínima em 105%), `min_rest` (descanso mínimo em 100%
+  entre zooms), `subframes` (≥16) e `shutter` (360° = motion blur pelo intervalo inteiro do frame,
+  só nos frames em movimento). Escala interpolada em espaço log. `enabled: false` desliga.
+- `render-all --out '<pasta>'` — renderiza numa pasta nova (versões v2, v3...) sem tocar na anterior.

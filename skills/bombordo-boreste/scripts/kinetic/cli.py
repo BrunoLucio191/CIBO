@@ -5,7 +5,7 @@
   JOB=job.json python3 cli.py segment  [clip ...]   # Etapa 2: blocks_<clip>.json
   JOB=job.json python3 cli.py preview  <clip> [--start 0 --dur 8]
   JOB=job.json python3 cli.py render   <clip>
-  JOB=job.json python3 cli.py render-all
+  JOB=job.json python3 cli.py render-all [--out '../CORTES/pasta v2']   # nova pasta, nunca sobrescreve
 
 Config: kinetic/config.yaml (defaults) + optional kinetic.yaml next to job.json
 (same keys, plus `videos: {<clip>: {...}}` overrides). Output folder: job key
@@ -25,7 +25,7 @@ def clips(args):
     out, skip = [], False
     for a in args:
         if skip: skip = False; continue
-        if a.startswith('--'): skip = a in ('--start', '--dur'); continue
+        if a.startswith('--'): skip = a in ('--start', '--dur', '--out'); continue
         out.append(a)
     return out or list(JOB['clips'])
 
@@ -50,6 +50,6 @@ if __name__ == '__main__':
             if cmd == 'preview':
                 pipeline.preview(JOB, JOBF, WORK, k, cfg, opt(args, '--start', 0.0), opt(args, '--dur', 8.0))
             else:
-                pipeline.render(JOB, JOBF, WORK, k, cfg)
+                pipeline.render(JOB, JOBF, WORK, k, cfg, out=args[args.index('--out') + 1] if '--out' in args else None)
     else:
         sys.exit(__doc__)

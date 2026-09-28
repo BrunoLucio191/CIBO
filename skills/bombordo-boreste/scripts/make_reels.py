@@ -69,7 +69,8 @@ def run(k):
         # kinetic typography layer (kinetic/): word-timed blocks, presets, 2x supersampling
         sys.path.insert(0,os.path.join(HERE,'kinetic')); import kinrender, anim as KA
         BLK=json.load(open(c['kinetic_blocks'],encoding='utf-8'))
-        CAPS=fp(BLK,c['kinetic_cfg'],open(kinrender.__file__,encoding='utf-8').read(),open(KA.__file__,encoding='utf-8').read())
+        # punch_in is the video zoom, not the caption layer: tuning it must not re-render captions
+        CAPS=fp(BLK,{a:b for a,b in c['kinetic_cfg'].items() if a!='punch_in'},open(kinrender.__file__,encoding='utf-8').read(),open(KA.__file__,encoding='utf-8').read())
         stage(f'caps:{k}', CAPS, [f'{B}/caps_{k}_rgb.mp4',f'{B}/caps_{k}_a.mp4'],
               lambda: kinrender.render(BLK,c['kinetic_cfg'],float(c['total']),f'{B}/caps_{k}'))
     else:
@@ -79,11 +80,13 @@ def run(k):
                 os.environ['CLICK'],os.environ['CLICK_GAIN'])
     stage(f'clicks:{k}',  clickkey, f'{B}/clicks_{k}.wav',
           lambda: CK.build(c,f'{B}/clicks_{k}.wav'))
-    cutkey=fp(c['keeps'],c['cropx'],c.get('cropx_timeline'),c['src'],c.get('impact_pulses'),c.get('long_moves'),c.get('fade_out'))
+    cutkey=fp(c['keeps'],c['cropx'],c.get('cropx_timeline'),c['src'],c.get('impact_pulses'),c.get('long_moves'),c.get('fade_out'),
+              c.get('punch'),open(os.path.join(HERE,'punch.py'),encoding='utf-8').read() if c.get('punch') else None)
     recut=stage(f'cut:{k}', cutkey, f'{B}/A_{k}.mp4', lambda: render.passA(c,f'{B}/A_{k}.mp4'))
     stage(f'intro:{k}',   cutkey, f'{B}/I_{k}.mp4', lambda: render.make_intro(f'{B}/A_{k}.mp4',f'{B}/I_{k}.mp4'))
     stage(f'cover:{k}',   fp(cutkey,c['headline'],c['cover_t'],c.get('cover_from'),c.get('cover_retouch'),open(cover.__file__,encoding='utf-8').read()), f'{B}/capa_{k}.png',
-          lambda: cover.build(c,f'{B}/A_{k}.mp4',f'{B}/capa_{k}.png'))
+          lambda: cover.build(*((dict(c,cover_t=0),render.clean_cover_path(f'{B}/A_{k}.mp4'))
+                                if c.get('punch') and not c.get('cover_from') else (c,f'{B}/A_{k}.mp4')),f'{B}/capa_{k}.png'))
     basename=c.get('filename',k)
     out=os.path.join(JOB.get('outdir',B),f'{basename}.mp4'); os.makedirs(os.path.dirname(out) or '.',exist_ok=True)
     def _final():

@@ -26,10 +26,17 @@ def derived_job(job, jobf, work, clip, cfg, blocks_path, outdir):
     J['work'] = kw; J['outdir'] = outdir; J['crf'] = 18; J['preset'] = 'medium'; J.pop('encoder', None)
     c['caption_engine'] = 'kinetic'; c['kinetic_blocks'] = blocks_path; c['kinetic_cfg'] = cfg
     c['cap_band_h'] = cfg['position']['band_height']
-    if cfg['punch_in']['enabled']:
-        blocks = jload(blocks_path)['blocks']
-        c['impact_pulses'] = [dict(t=round(max(0.3, b['words'][0]['s'] - cfg['timing']['lead']), 2),
-                                   amount=cfg['punch_in']['amount'], duration=cfg['punch_in']['duration'])
+    pc = cfg['punch_in']
+    # every video zoom of the clip (destaques AND the job's long_moves) runs on punch.py:
+    # Easy Ease keyframes in log space + 360-degree shutter, never the zoompan sin pulse
+    c['punch'] = {k: pc[k] for k in ('ramp', 'bezier', 'subframes', 'shutter', 'min_hold', 'min_rest')}
+    if pc['enabled']:
+        blocks = [b for b in jload(blocks_path)['blocks'] if b['words']]
+        kinrender.timeline(blocks, cfg, 9999)
+        # zoom in with the destaque's entry, hold while it is on screen, back as it leaves
+        c['impact_pulses'] = [dict(t=round(max(0.3, b['t_in']), 3), amount=pc['amount'],
+                                   until=round(b['t_out'] if pc.get('hold', 'highlight') == 'highlight'
+                                               else b['t_in'] + float(pc['hold']), 3))
                               for b in blocks if b['kind'] == 'highlight']
     else:
         c['impact_pulses'] = []
@@ -68,9 +75,9 @@ def export(job, root, clip, outdir):
     return new
 
 
-def render(job, jobf, work, clip, cfg):
+def render(job, jobf, work, clip, cfg, out=None):
     root = os.path.dirname(jobf)
-    outdir = os.path.join(root, job.get('kinetic_outdir', './codex_reels/deliverables/kinetic'))
+    outdir = os.path.join(root, out or job.get('kinetic_outdir', './codex_reels/deliverables/kinetic'))
     os.makedirs(outdir, exist_ok=True)
     bp = ensure_data(job, work, clip, cfg)
     jf, kw = derived_job(job, jobf, work, clip, cfg, bp, outdir)

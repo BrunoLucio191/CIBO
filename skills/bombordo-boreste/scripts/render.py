@@ -44,6 +44,8 @@ def impact_motion(c):
             f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
             f":d=1:s={W}x{H}:fps={FPS},format=yuv420p[vo]")
 
+def clean_cover_path(passa): return passa[:-4]+'_clean_cover.mkv'
+
 def passA(c,out):
     keeps=c['keeps']; n=len(keeps); fc=[]
     cw=608
@@ -73,6 +75,16 @@ def passA(c,out):
         fc.append(f"[0:a]atrim=start={a}:end={b},asetpts=PTS-STARTPTS,"
                   f"afade=t=in:st=0:d=0.012,afade=t=out:st={round(b-a-fade_out,3)}:d={fade_out:.3f}[a{i}]")
     fc.append(''.join(f"[v{i}][a{i}]" for i in range(n))+f"concat=n={n}:v=1:a=1[vc][ac]")
+    if c.get('punch'):
+        # Easy Ease keyframes + 360-degree shutter (punch.py); impact_motion's zoompan
+        # sin pulse is the legacy engine for jobs without a `punch` block
+        import punch
+        fc.append(f'[vc]scale={W}:{H}:flags=lanczos,format=yuv420p[vo]')
+        fc.append("[ac]aresample=48000,asetpts=N/SR/TB[ao]")
+        f=';'.join(fc)
+        punch.run(f'ffmpeg -y -v error -i "{SRCDIR}/{c["src"]}" -filter_complex "{f}"', c, out, FPS, W, H,
+                  clean_t=None if c.get('cover_from') else float(c['cover_t']), clean_out=clean_cover_path(out))
+        return
     fc.append(impact_motion(c))
     fc.append("[ac]aresample=48000,asetpts=N/SR/TB[ao]")
     f=';'.join(fc)
