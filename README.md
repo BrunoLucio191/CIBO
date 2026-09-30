@@ -76,3 +76,8 @@ Os `.venv/` não são versionados (veja `.gitignore`) — são recriados localme
 ## Como o CIBO cresce
 
 Este repositório é o histórico de aprendizado do agente. Quando uma skill existente for corrigida (um bug de render, uma regra de estilo nova de um cliente) ou uma skill nova for ensinada, ela entra aqui do mesmo jeito: pasta própria em `skills/`, `SKILL.md` com o fluxo obrigatório, scripts e assets versionados, sem misturar com as outras.
+
+### Social media e estratégia
+| Skill | O que faz |
+|---|---|
+| `relatorio-estrategia-social` | Relatório mensal de performance (Instagram, TikTok, YouTube) e estratégia do mês seguinte: inventário dos dados, diagnóstico por plataforma, leitura cruzada e funil (com pausa para aprovação), calendário pronto para produção, metas e testes — PDF + planilha do calendário. |
