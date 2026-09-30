@@ -142,7 +142,7 @@ episodios = []
 plano = {5: (4, ['13mi', 'aero']), 12: (5, ['15', 'demurrage']), 19: (6, ['controlador', 'trading']), 26: (7, ['comandante', 'maceio'])}
 for seg, (n, ac) in plano.items():
     episodios.append((D(seg), n))
-    add(D(seg), novo(n, 'chamada'), '18:15')          # depois do episódio no ar (18h)
+    add(D(seg), novo(n, 'chamada'), '19:15')          # depois do episódio no ar (19h)
     add(D(seg + 1), novo(n, 'fato')); add(D(seg + 2), ACERVO[ac[0]])
     add(D(seg + 3), EP03['tdah'] if n == 7 else novo(n, 'virada')); add(D(seg + 4), ACERVO[ac[1]])
 for c in cortes: c['funil'] = PILAR[c['p']][0]
@@ -168,7 +168,7 @@ for c in sorted(cortes, key=lambda c: (c['data'], c['hora'])):
                          tema=c['tema'], gancho=c['gancho'], estrutura=c['est'] + ['CTA'], trecho=f"{c['ep']} · {c['ts']}", cta=CTA[pl], metrica=SUCESSO[(c['funil'], pl)]))
 for d, n in episodios:
     for pl in ('YouTube', 'Spotify'):
-        rows.append(dict(data=d.strftime('%d/%m') + ' ' + DIAS[d.weekday()], horario='18:00', plataforma=pl, formato='Episódio completo', pilar='Episódio da semana', funil='Fundo',
+        rows.append(dict(data=d.strftime('%d/%m') + ' ' + DIAS[d.weekday()], horario='19:00', plataforma=pl, formato='Episódio completo', pilar='Episódio da semana', funil='Fundo',
                          tema=f'EP {n:02d} — convidado a confirmar', gancho='Título com o número/fato mais forte + nome do convidado no fim (teste T4)' if pl == 'YouTube' else 'Mesmo título do YouTube (conferir grafia dos nomes)',
                          estrutura=['Trecho mais forte nos primeiros 30 s', 'Capítulos na descrição', 'Tela final com o Short da semana'] if pl == 'YouTube' else ['Descrição com capítulos', 'Links do YouTube e do Linktree'],
                          trecho=f'EP {n:02d}', cta='Inscreva-se + Spotify na descrição' if pl == 'YouTube' else 'Seguir o podcast',
@@ -176,7 +176,7 @@ for d, n in episodios:
 rows.sort(key=lambda r: (r['data'][:5][::-1], r['horario']))
 REGRAS = [['CTA padrão — ' + k, v] for k, v in CTA.items()] + [[f'Sucesso — {f} · {p}', v] for (f, p), v in SUCESSO.items()] + [
     ['Pilar → etapa', 'Porto em números e Bastidores = Topo; Carreira = Meio; Episódio = Fundo'],
-    ['Horário (teste T2)', 'Cortes às 12h nas semanas de 01/10, 05/10 e 19/10; às 19h nas semanas de 12/10 e 26/10. Episódio 18h, chamada 18h15'],
+    ['Horário (teste T2)', 'Cortes às 12h nas semanas de 01/10, 05/10 e 19/10; às 19h nas semanas de 12/10 e 26/10. Episódio 19h, chamada 19h15'],
     ['Stories', 'Todo dia: corte do dia + figurinha de link para o Linktree'],
     ['Coleta para o próximo relatório', 'Instagram: export de Conteúdo 01–31/10, séries diárias e prints (Visão geral, Resultados, Público, Stories, Benchmarking); Linktree: cliques por link; YouTube: Conteúdo 01–31/10; TikTok: Content/Overview/Viewers/Followers 01–31/10; Spotify: plays por episódio no mês. Tudo no mesmo dia e período.']]
 json.dump(dict(rows=rows, regras=REGRAS), open(P('calendario_v2.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
@@ -212,6 +212,9 @@ def meta_bar(base, meta, lbl_b, lbl_m):
 
 # ---------------------------------------------------------------- HTML
 font = os.path.expanduser('~/.claude/skills/bombordo-boreste/assets/CalSans-Regular.ttf')
+_bg = base64.b64encode(open(os.path.join(ROOT, 'metricas', '_marca', 'logo_begrow.png'), 'rb').read()).decode()
+# SVG embrulhando o PNG: define o tamanho impresso no rodapé sem perder resolução
+BEGROW_SVG = 'data:image/svg+xml;base64,' + base64.b64encode(f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30" viewBox="0 0 150 150"><rect width="150" height="150" rx="18" fill="#101D51"/><image width="150" height="150" xlink:href="data:image/png;base64,{_bg}"/></svg>'.encode()).decode()
 logo = 'data:image/png;base64,' + base64.b64encode(open(f'{ROOT}/ep4/codex_reels/assets/logo_podcast.png', 'rb').read()).decode()
 logo_w = 'data:image/png;base64,' + base64.b64encode(open(os.path.expanduser('~/.claude/skills/bombordo-boreste/assets/logo_portos_white.png'), 'rb').read()).decode()
 H = []; A = H.append
@@ -262,14 +265,13 @@ def evo_table():
 def link(url, txt): return f'<a href="{E(url)}">{txt}</a>'
 HYP = '<span class="hyp">hipótese</span>'
 
-A(f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Bombordo e Boreste · Relatório de setembro 2026 · v2</title><style>
+A(f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Bombordo e Boreste · Relatório de setembro 2026</title><style>
 @font-face {{ font-family:'Cal Sans'; src:url('file://{font}'); }}
 @page {{ size:A4; margin:18mm 14mm 16mm;
   @top-left {{ content:'Bombordo e Boreste · Relatório de setembro 2026'; font:8pt -apple-system,Helvetica,sans-serif; color:#5B6678; }}
-  @top-right {{ content:'v2 · 30/09/2026'; font:8pt -apple-system,Helvetica,sans-serif; color:#5B6678; }}
-  @bottom-right {{ content:counter(page); font:8pt -apple-system,Helvetica,sans-serif; color:#0B1A33; }}
-  @bottom-left {{ content:'Preparado pela equipe de social media para a DL Portos'; font:8pt -apple-system,Helvetica,sans-serif; color:#5B6678; }} }}
-@page capa {{ margin:0; @top-left {{ content:none; }} @top-right {{ content:none; }} @bottom-right {{ content:none; }} @bottom-left {{ content:none; }} }}
+    @bottom-right {{ content:counter(page); font:8pt -apple-system,Helvetica,sans-serif; color:#0B1A33; }}
+  @bottom-left {{ content:url('{BEGROW_SVG}'); vertical-align:middle; }} }}
+@page capa {{ margin:0; @top-left {{ content:none; }} @bottom-right {{ content:none; }} @bottom-left {{ content:none; }} }}
 @page land {{ size:A4 landscape; margin:16mm 12mm 14mm; }}
 :root {{ --navy:#0B1A33; --blue:#4F95FF; --ink:#1B2433; --mut:#5B6678; --line:#E3E8F0; --soft:#F2F6FC; }}
 * {{ box-sizing:border-box; }}
@@ -320,11 +322,10 @@ ol,ul {{ margin:4px 0 8px 18px; padding:0; }} li {{ margin:3px 0; }}
 
 # capa
 A(f'''<div class="capa"><div class="bar"></div>
-<div class="kick" style="color:#C9D5EA">Relatório mensal de redes · nº 1 · mês base da série</div>
 <div class="wm">Bombordo<br>e Boreste</div>
 <div class="t">Resultados de setembro · Estratégia de outubro</div>
-<div class="d">Instagram, YouTube, TikTok e Spotify<br>Período analisado: 02/09 a 30/09/2026<br>Entregue em 30/09/2026 · versão 2</div>
-<div class="by"><img src="{logo_w}" alt="DL Portos"><div>Uma produção DL Portos<br>Preparado pela equipe de social media</div></div></div>''')
+<div class="d">Instagram, YouTube, TikTok e Spotify<br>Período analisado: 02/09 a 30/09/2026<br>Entregue em 30/09/2026</div>
+<div class="by"><img src="{logo_w}" alt="DL Portos"></div></div>''')
 
 # resumo
 achados = [
@@ -335,7 +336,7 @@ achados = [
     f'<b>TikTok e Spotify ainda não encontraram o seu papel:</b> {fmt(TT_PAINEL)} views no TikTok com +1 seguidor; 19 plays no Spotify somando os 4 episódios.']
 decisoes = [f'<b>Repetir a fórmula da Inpasa:</b> os {TOPO} cortes de alcance do mês abrem com um número ou fato surpreendente do setor.',
             '<b>Um só destino:</b> todo corte leva ao episódio pelo Linktree, com link nos stories todo dia.',
-            '<b>Episódio toda segunda às 18h</b> (YouTube + Spotify), com a chamada entrando às 18h15, quando o link já funciona.',
+            '<b>Episódio toda segunda às 19h</b> (YouTube + Spotify), com a chamada entrando às 19h15, quando o link já funciona.',
             f'<b>Usar o acervo:</b> {len(ACERVO)} cortes de fatos e histórias dos EP 01 e EP 02 completam a semana.',
             '<b>Testar antes de fixar:</b> horário (12h x 19h), TikTok adaptado e título de episódio.']
 A('<section><div class="kick">Resumo executivo</div><h2>Setembro em uma página</h2><div class="rule"></div>')
@@ -435,7 +436,7 @@ A(f'''<section id="estr"><div class="kick">Estratégia de outubro</div><h2>Cresc
  [f'<i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:{PILAR["Episódio da semana"][1]}"></i> <b>Episódio da semana</b>','Levar ao episódio completo','Fundo',f'{FUNDO} chamadas + 4 episódios']])}
 <p><b>Mix do mês:</b> topo {mix('Topo')}, meio {mix('Meio')}, fundo {mix('Fundo')}. Todos os cortes de topo abrem com número ou fato surpreendente.</p>
 <h3>Semana-tipo</h3>{table(['Segunda','Terça','Quarta','Quinta','Sexta','Todo dia'], [[
- '18h: episódio no YouTube e no Spotify<br>18h15: corte de chamada','Corte com o fato do episódio','Corte do acervo','Corte de carreira do episódio','Corte do acervo','Stories com o corte do dia e link do Linktree']])}
+ '19h: episódio no YouTube e no Spotify<br>19h15: corte de chamada','Corte com o fato do episódio','Corte do acervo','Corte de carreira do episódio','Corte do acervo','Stories com o corte do dia e link do Linktree']])}
 <div class="box"><b>Regras de todo corte</b> (valem para as 3 redes; não se repetem no calendário)<ul>
 <li><b>Instagram:</b> {CTA['Instagram']}.</li><li><b>TikTok:</b> {CTA['TikTok']}.</li><li><b>YouTube Shorts:</b> {CTA['YouTube Shorts']}.</li>
 <li><b>Sucesso no Instagram:</b> topo = views ≥ 1.500 e compartilhamentos ≥ 1% do alcance; meio = salvamentos ≥ 0,3% do alcance ou ≥ 5 seguidores; fundo = ≥ 2 cliques no link no dia.</li></ul></div>
@@ -450,7 +451,7 @@ start = dt.date(2026, 9, 28)
 for i in range(35):
     d = start + dt.timedelta(days=i); off = d.month != 10
     inner = f'<div class="dn">{d.day}</div>'
-    if d in epd: inner += f'<div class="chip ep">18h · <b>EP {epd[d]:02d}</b> no YouTube e Spotify</div>'
+    if d in epd: inner += f'<div class="chip ep">19h · <b>EP {epd[d]:02d}</b> no YouTube e Spotify</div>'
     for c in sorted(bycal.get(d, []), key=lambda c: c['hora']):
         inner += f'<div class="chip" style="background:{PILAR[c["p"]][1]}">{c["hora"].replace(":00", "h").replace(":", "h")} · {E(c["curto"])}</div>'
     if d == dt.date(2026, 10, 12): inner += '<div class="note" style="margin:2px 0">feriado</div>'
@@ -489,7 +490,7 @@ A(f'''<section id="passos"><div class="kick">Aprendizados e próximos passos</di
  ['Responder as mensagens do direct em até 24 h (hoje metade fica sem resposta)','<b>Cliente / Daniel</b>','contínuo'],
  ['Colocar o link do Linktree nos stories todos os dias','Social media','a partir de 01/10'],
  ['Tirar dos cortes as chamadas para outras contas; CTA único para o episódio','Social media e edição','01/10'],
- ['Pensar as próximas gravações já com os cortes em mente (perguntas que puxem números, histórias e opiniões): o acervo acaba em outubro','<b>Cliente</b> e social media','antes da gravação do EP 08'],
+ ['Manter a conversa livre, sem roteiro, levando 2 ou 3 perguntas-âncora que puxem números, histórias e opiniões — o acervo de cortes acaba em outubro','<b>Cliente</b> e social media','antes da gravação do EP 08'],
  ['Ponto de controle dos testes T2 e T3','Social media','16/10'],
  ['Coletar o painel de Benchmarking do Business Suite para comparar com contas parecidas','Social media','31/10'],
  ['Relatório de outubro com o quadro "meta x realizado"','Social media','05/11']])}
