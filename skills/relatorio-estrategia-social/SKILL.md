@@ -101,4 +101,13 @@ e **espere a aprovação**. Só siga para a estratégia depois do ok; incorpore 
 - Nenhuma comparação de métrica bruta entre plataformas; hipóteses marcadas.
 - Resumo executivo cabe em 1 página; calendário tem todas as colunas preenchidas.
 - Quantidade de posts por semana ≤ capacidade de produção informada.
-- A planilha e o calendário do PDF têm as mesmas linhas.
+- A planilha e o calendário do PDF têm os mesmos conteúdos. No PDF, o calendário vai em **página
+  paisagem** (`@page land { size: A4 landscape }`) e um corte publicado em várias plataformas no
+  mesmo dia vira uma linha só (com CTA e meta por plataforma); na planilha, uma linha por publicação.
+  Em retrato, com uma linha por plataforma, 80 conteúdos viraram 15 páginas ilegíveis.
+- Sem a pauta dos episódios futuros, use o acervo (transcrições dos episódios já gravados) para
+  cortes com tema, trecho e gancho reais, e regras fixas de gancho por tipo para os episódios novos.
+- Confira cada gancho/tema tirado de transcrição contra o trecho: não acrescente lugar, número ou
+  fato que a fala não diz.
+- Exports do Meta vêm em UTF-16 e com horário 4 h atrás de Brasília (UTC−7): converta antes de
+  falar de dia/horário. Zips com nome acentuado: descompacte com Python (unzip falha).
