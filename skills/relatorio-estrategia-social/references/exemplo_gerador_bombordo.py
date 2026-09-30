@@ -471,9 +471,9 @@ metas = [('Instagram', 'Views no post típico (reel)', med('views', reels), 1500
          ('TikTok', 'Seguidores', 20, 60, fmt),
          ('Spotify', 'Plays no mês', 19, 40, fmt)]
 A('<section id="metas"><div class="kick">Metas e testes</div><h2>Onde queremos chegar em outubro</h2><div class="rule"></div>')
-A(table(['Rede', 'Indicador', 'Setembro', 'Meta de outubro', 'Realizado em outubro', 'Progresso'],
-        [[r, i, f'<span class="n">{f(b)}</span>', f'<b>{f(m) if "sem" not in f(m) else fmt(m)}</b>', '<span class="note">no próximo relatório</span>', meta_bar(b, m, 'setembro', '')] for r, i, b, m, f in metas]))
-A('<p class="note">Este quadro se repete todo mês: a coluna "Realizado" é preenchida no relatório de outubro, e a barra mostra quanto falta da base até a meta. Metas calculadas sem contar com outro viral.</p>')
+A(table(['Rede', 'Indicador', 'Setembro', 'Meta de outubro', 'Realizado em outubro'],
+        [[r, i, f'<span class="n">{f(b)}</span>', f'<b>{f(m) if "sem" not in f(m) else fmt(m)}</b>', '<span class="note">no próximo relatório</span>'] for r, i, b, m, f in metas]))
+A('<p class="note">Este quadro se repete todo mês: a coluna "Realizado" é preenchida no relatório de outubro, com a indicação de meta atingida ou não. Metas calculadas sem contar com outro viral.</p>')
 A('<h3>Testes do mês</h3>' + table(['Teste', 'O que queremos descobrir', 'Como medir', 'Quando decidir'], [
  ['<b>T1 · Fórmula Inpasa</b>', f'Cortes que abrem com número/fato ({TOPO}) alcançam mais que os de carreira ({MEIO})?', 'Views e compartilhamentos por alcance no Instagram, topo x meio', '31/10'],
  ['<b>T2 · Horário</b>', 'Cortes às 12h rendem mais que às 19h? (hoje, o 12h vem de um único post)', 'Views nas primeiras 24 h: semanas de 12h x semanas de 19h', '31/10'],

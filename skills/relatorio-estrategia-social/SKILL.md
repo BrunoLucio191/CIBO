@@ -103,7 +103,9 @@ O valor está na comparação de um mês com o outro. O primeiro relatório de u
   5. Funil desenhado e papel de cada rede. 6. Estratégia (manter/parar/testar, pilares, mix, semana-
      tipo e **regras que se repetem escritas uma vez só**: CTA padrão por plataforma, critério de
      sucesso por tipo). 7. **Calendário como grade do mês em uma página** (paisagem, cor por pilar).
-  8. Metas e testes: quadro **meta x realizado** que se repete todo mês. 9. **Aprendizados
+  8. Metas e testes: quadro **meta x realizado** que se repete todo mês. Barra de progresso só
+     quando houver valor realizado (realizado ÷ meta); no mês base não há progresso a mostrar e a
+     barra "base ÷ meta" confunde (foi recusada pelo usuário). 9. **Aprendizados
      acumulados** (lista que só cresce, com o mês de origem), próximos passos com **responsável e
      prazo** (destaque o que depende do cliente) e glossário curto. 10. Anexo com as tabelas.
 - **Planilha de produção (xlsx)**: uma linha por publicação com trecho/minutagem, gancho, estrutura,
