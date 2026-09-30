@@ -54,9 +54,9 @@ POSTS = [('3ª maior produtora de etanol', 'inpasa', 'Inpasa — 3ª maior do mu
          ('inglês “perfeito”', None, 'Inglês não precisa ser perfeito'), ('Identificando Potencial', None, 'Identificar talentos'),
          ('Empreendedorismo', None, 'Empreender no porto'), ('Só vontade não basta', None, 'Só vontade não basta'),
          ('vaga no comércio exterior', None, 'Vagas com outro nome'), ('placa escrita', None, 'Oportunidades no etanol de milho'),
-         ('inovação portuária', None, 'Política de inovação dos portos'), ('drones', None, 'Drones nos portos'), ('Drones', None, 'Drones nos portos'),
+         ('inovação portuária', None, 'Política de inovação dos portos'), ('DAAS', None, 'Drones (DAAS) na PEGN'), ('futuro dos portos', None, 'Drones nos portos'), ('drones', None, 'Drones nos portos'), ('Drones', None, 'Drones nos portos'),
          ('Amarração de Navios: Inovação', None, 'EP 01 · Dayvid Guterres'), ('42 Anos', None, 'EP 00 · Silvio Lúcio'),
-         ('30 Anos de Carreira', None, 'EP 02 · Dannyel'), ('Juliana Frazão', None, 'EP 03 · Juliana e Larissa'), ('DAAS', None, 'Drones (DAAS) na PEGN'),
+         ('30 Anos de Carreira', None, 'EP 02 · Dannyel'), ('Juliana Frazão', None, 'EP 03 · Juliana e Larissa'),
          ('Inspetor de Embarque', None, 'Inspetor de embarque'), ('A AMARRAÇÃO', 'amarracao', 'Amarração: 5 mil anos')]
 _th = {}
 def thumb(path, w=64):
@@ -69,6 +69,16 @@ def ident(text):
     for k, capa, curto in POSTS:
         if k in text: return (CAPAS[capa][0] if capa and CAPAS.get(capa) else None), curto
     return None, cut(text, 38)
+TT_BY_KEY = {'inglês “perfeito”': '7686238114808941845', 'placa escrita': '7688210969373330709', 'inovação portuária': '7685465599706713362',
+             'futuro dos portos': '7690531847234784564', 'Só vontade não basta': '7684411717513760008'}
+def ig_thumb(r):
+    src, curto = ident(r['texto'])
+    if src: return src, curto
+    sc = re.search(r'/(?:p|reel)/([^/]+)', r['link']).group(1)
+    if os.path.exists(P('thumbs', f'ig_{sc}.jpg')): return P('thumbs', f'ig_{sc}.jpg'), curto
+    for k, v in TT_BY_KEY.items():
+        if k in r['texto']: return P('thumbs', f'tt_{v}.jpg'), curto
+    return None, curto
 def img(src, cls='th'): return f'<img class="{cls}" src="{src}">' if src else '<div class="th ph"></div>'
 
 # ---------------------------------------------------------------- números
@@ -123,6 +133,13 @@ EP03 = {
     'tdah': dict(p='Carreira no porto', curto='TDAH como trunfo', tema='Com TDAH, o hiperfoco virou trunfo', ep='EP 03 · Juliana e Larissa', ts='corte 03 pronto',
                  gancho='"COM TDAH, ELA TRANSFORMOU O HIPERFOCO NO SEU MAIOR TRUNFO NO PORTO"', est=['Corte pronto (pasta legendas animadas v2)']),
 }
+PLANO_B = [
+    dict(p='Bastidores da operação', curto='Um mar de procedimentos', tema='Cada operação é um mar de procedimentos', ep='EP 00 · Silvio Lúcio', ts='00:25:31',
+         gancho='"CADA OPERAÇÃO DESSA É UM MAR DE PROCEDIMENTOS"', est=['A frase do Silvio', 'Navio, caminhão, vagão: a cadeia diária', '"Todo dia tem uma história diferente"']),
+    dict(p='Bastidores da operação', curto='O inspetor do navio atracado', tema='A função criada para cuidar do navio depois de atracado', ep='EP 01 · Dayvid Guterres', ts='00:13:51',
+         gancho='"A GENTE CRIOU UMA FUNÇÃO SÓ PARA CUIDAR DO NAVIO DEPOIS DE ATRACADO"', est=['O problema: cabos sob estresse', 'O inspetor que eles criaram', 'Por que cada cabo tem um trabalho']),
+    dict(p='Carreira no porto', curto='A pergunta de 1 milhão', tema='Como trabalhar no terminal? Manda o currículo', ep='EP 00 · Silvio Lúcio', ts='00:38:23',
+         gancho='"A PERGUNTA DE 1 MILHÃO: COMO EU FAÇO PARA TRABALHAR AQUI? MANDA O CURRÍCULO"', est=['A pergunta', 'A resposta direta do Silvio', 'O que o RH olha'])]
 def novo(n, tipo):
     if tipo == 'chamada':
         return dict(p='Episódio da semana', curto=f'Chamada do EP {n:02d}', tema=f'Chamada do EP {n:02d}: a melhor resposta do convidado', ep=f'EP {n:02d}', ts='escolher na edição',
@@ -134,17 +151,17 @@ def novo(n, tipo):
                 gancho='A decisão ou o obstáculo em 1 frase ("Eu comecei vendendo passagens...")', est=['Onde começou', 'O obstáculo/decisão', 'Onde chegou', 'A lição para quem quer entrar'])
 
 D = lambda d: dt.date(2026, 10, d)
-HORA = {40: '12:00', 41: '12:00', 42: '19:00', 43: '12:00', 44: '19:00'}  # teste T2: 12h x 19h em semanas alternadas
+HORA = {40: '12:00', 41: '12:00', 42: '12:00', 43: '19:00', 44: '19:00'}  # teste T2; feriado de 12/10 fora do bloco das 19h
 cortes = []   # (data, hora, item)
 def add(d, it, hora=None): cortes.append(dict(data=d, hora=hora or HORA[d.isocalendar()[1]], **it))
-add(D(1), EP03['telas']); add(D(2), EP03['presidente'])
+add(D(1), EP03['telas']); add(D(2), EP03['tdah'])  # 'presidente' já saiu em 30/09 no Instagram
 episodios = []
 plano = {5: (4, ['13mi', 'aero']), 12: (5, ['15', 'demurrage']), 19: (6, ['controlador', 'trading']), 26: (7, ['comandante', 'maceio'])}
 for seg, (n, ac) in plano.items():
     episodios.append((D(seg), n))
     add(D(seg), novo(n, 'chamada'), '19:15')          # depois do episódio no ar (19h)
     add(D(seg + 1), novo(n, 'fato')); add(D(seg + 2), ACERVO[ac[0]])
-    add(D(seg + 3), EP03['tdah'] if n == 7 else novo(n, 'virada')); add(D(seg + 4), ACERVO[ac[1]])
+    add(D(seg + 3), novo(n, 'virada')); add(D(seg + 4), ACERVO[ac[1]])
 for c in cortes: c['funil'] = PILAR[c['p']][0]
 cnt = lambda f: sum(1 for c in cortes if f(c))
 N = len(cortes); TOPO = cnt(lambda c: c['funil'] == 'Topo'); MEIO = cnt(lambda c: c['funil'] == 'Meio'); FUNDO = cnt(lambda c: c['funil'] == 'Fundo')
@@ -174,9 +191,13 @@ for d, n in episodios:
                          trecho=f'EP {n:02d}', cta='Inscreva-se + Spotify na descrição' if pl == 'YouTube' else 'Seguir o podcast',
                          metrica='CTR ≥ 3,5% e ≥ 5 inscritos em 7 dias' if pl == 'YouTube' else '≥ 5 plays em 7 dias'))
 rows.sort(key=lambda r: (r['data'][:5][::-1], r['horario']))
-REGRAS = [['CTA padrão — ' + k, v] for k, v in CTA.items()] + [[f'Sucesso — {f} · {p}', v] for (f, p), v in SUCESSO.items()] + [
+for d_, it in zip((5, 6, 8), PLANO_B):
+    for pl, f in REGRAS_CTA.items():
+        rows.append(dict(data=f'{d_:02d}/10 {DIAS[D(d_).weekday()]} · PLANO B', horario='12:00', plataforma=pl, formato=f, pilar=it['p'], funil=PILAR[it['p']][0], tema=it['tema'], gancho=it['gancho'],
+                         estrutura=it['est'] + ['CTA'], trecho=f"{it['ep']} · {it['ts']}", cta=CTA[pl], metrica=SUCESSO[(PILAR[it['p']][0], pl)]))
+REGRAS = [['Plano B do EP 04', 'Se o EP 04 não estiver gravado até 02/10: segunda 05/10 sai "Um mar de procedimentos" no lugar da chamada, terça 06/10 "O inspetor do navio atracado" e quinta 08/10 "A pergunta de 1 milhão" (linhas PLANO B). O EP 04 e os demais episódios passam uma semana para frente.']] + [['CTA padrão — ' + k, v] for k, v in CTA.items()] + [[f'Sucesso — {f} · {p}', v] for (f, p), v in SUCESSO.items()] + [
     ['Pilar → etapa', 'Porto em números e Bastidores = Topo; Carreira = Meio; Episódio = Fundo'],
-    ['Horário (teste T2)', 'Cortes às 12h nas semanas de 01/10, 05/10 e 19/10; às 19h nas semanas de 12/10 e 26/10. Episódio 19h, chamada 19h15'],
+    ['Horário (teste T2)', 'Cortes às 12h nas semanas de 01, 05 e 12/10; às 19h nas semanas de 19 e 26/10 (o feriado de 12/10 fica fora do bloco das 19h). Episódio 19h, chamada 19h15'],
     ['Stories', 'Todo dia: corte do dia + figurinha de link para o Linktree'],
     ['Coleta para o próximo relatório', 'Instagram: export de Conteúdo 01–31/10, séries diárias e prints (Visão geral, Resultados, Público, Stories, Benchmarking); Linktree: cliques por link; YouTube: Conteúdo 01–31/10; TikTok: Content/Overview/Viewers/Followers 01–31/10; Spotify: plays por episódio no mês. Tudo no mesmo dia e período.']]
 json.dump(dict(rows=rows, regras=REGRAS), open(P('calendario_v2.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
@@ -229,7 +250,7 @@ LINHAS = [('Instagram', 'Views', 'ig_views'), ('Instagram', 'Contas alcançadas'
           ('Instagram', 'Carrosséis publicados', 'ig_carrosseis'), ('Instagram', 'Stories publicados', 'ig_stories'),
           ('YouTube', 'Views', 'yt_views'), ('YouTube', 'Horas assistidas', 'yt_horas'), ('YouTube', 'Novos inscritos', 'yt_insc'), ('YouTube', 'Cliques na miniatura (CTR)', 'yt_ctr'),
           ('YouTube', 'Episódios publicados', 'yt_eps'), ('YouTube', 'Shorts publicados', 'yt_shorts'),
-          ('TikTok', 'Views', 'tt_views'), ('TikTok', 'Vídeos publicados', 'tt_videos'), ('TikTok', 'Seguidores (total)', 'tt_seg'), ('Spotify', 'Plays e downloads', 'sp_plays')]
+          ('TikTok', 'Views', 'tt_views'), ('TikTok', 'Vídeos publicados', 'tt_videos'), ('TikTok', 'Seguidores (total)', 'tt_seg'), ('Spotify', 'Plays nos 30 primeiros dias (soma)', 'sp_plays')]
 FMT = {'yt_horas': lambda v: fmt(v, 1), 'yt_ctr': lambda v: fmt(v, 2) + '%',
        'ig_alcance': lambda v: fmt(v / 1000, 1) + ' mil', 'ig_visitas': lambda v: fmt(v / 1000, 1) + ' mil'}  # painel mostra arredondado (125,3K; 1,2K)
 hist = json.load(open(HIST, encoding='utf-8')) if os.path.exists(HIST) else {'cliente': 'Bombordo e Boreste', 'meses': {}}
@@ -275,7 +296,7 @@ A(f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Bombo
 :root {{ --navy:#0B1A33; --blue:#4F95FF; --ink:#1B2433; --mut:#5B6678; --line:#E3E8F0; --soft:#F2F6FC; }}
 * {{ box-sizing:border-box; }}
 body {{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; color:var(--ink); font-size:9.4pt; line-height:1.45; margin:0; background:#fff; }}
-h1,h2,h3,.kpi b,.big {{ font-family:'Cal Sans',-apple-system,sans-serif; font-weight:400; color:var(--navy); }}
+h1,h2,h3,.kpi b,.big {{ font-family:'Cal Sans',-apple-system,sans-serif; font-weight:400; color:var(--navy); font-variant-ligatures:none; font-feature-settings:'liga' 0,'clig' 0,'calt' 0,'kern' 0; text-rendering:geometricPrecision; }}
 h2 {{ font-size:19pt; margin:0 0 3px; }} .kick {{ color:var(--blue); font-size:8.5pt; letter-spacing:.08em; text-transform:uppercase; font-weight:700; margin-bottom:2px; }}
 .rule {{ height:3px; background:linear-gradient(90deg,var(--navy) 0 18%,var(--blue) 18% 100%); margin:4px 0 12px; border-radius:2px; }}
 h3 {{ font-size:12pt; margin:14px 0 6px; }}
@@ -308,7 +329,7 @@ td.n, th.n {{ text-align:right; font-variant-numeric:tabular-nums; }}
 .mbl {{ display:flex; justify-content:space-between; font-size:7.6pt; color:var(--mut); }}
 ol,ul {{ margin:4px 0 8px 18px; padding:0; }} li {{ margin:3px 0; }}
 .grid {{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }}
-.gd {{ min-height:25mm; border:1px solid var(--line); border-radius:6px; padding:4px; font-size:7.6pt; background:#fff; }}
+.gd {{ min-height:22.5mm; border:1px solid var(--line); border-radius:6px; padding:4px; font-size:7.6pt; background:#fff; }}
 .gd.off {{ background:#FAFBFD; color:#B5BDCB; }} .gd .dn {{ font-family:'Cal Sans'; font-size:10pt; color:var(--navy); }}
 .gh {{ font-weight:700; color:var(--mut); font-size:8pt; text-align:center; }}
 .chip {{ border-radius:4px; padding:2px 4px; margin:3px 0; color:#fff; line-height:1.25; }}
@@ -359,7 +380,7 @@ A(f'''<section id="evo"><div class="kick">Evolução</div><h2>A série mês a m�
 # Instagram
 def rk(rs, key, n=5, rev=True): return sorted([r for r in rs if int(r['alcance']) >= 500], key=lambda r: (float(r[key] or 0) if key != 'seg_mil_alc' else r[key]), reverse=rev)[:n]
 def igline(r, key):
-    src, curto = ident(r['texto']); t = ig_time(r['data'])
+    src, curto = ig_thumb(r); t = ig_time(r['data'])
     val = pctf(r['comp_alc'], 2) if key == 'comp_alc' else fmt(r['seg_mil_alc'], 1)
     return [img(thumb(src)), link(r['link'], E(curto)), t.strftime('%d/%m'), f'<span class="n">{fmt(int(r["views"]))}</span>', f'<span class="n">{fmt(int(r["alcance"]))}</span>', f'<b>{val}</b>']
 A(f'''<section id="ig"><div class="kick">Instagram · @danieldematospereira</div><h2>O mês em que o perfil saiu da bolha</h2><div class="rule"></div>
@@ -390,7 +411,8 @@ A(f'''<section id="yt"><div class="kick">YouTube · Bombordo e Boreste</div><h2>
 
 # TikTok + Spotify
 def ttline(r):
-    src, curto = ident(r['titulo'])
+    curto = ident(r['titulo'])[1]; src = P('thumbs', f"tt_{r['video']}.jpg")
+    if not os.path.exists(src): src = ident(r['titulo'])[0]
     return [img(thumb(src)), link(tt_links.get(r['video'], 'https://www.tiktok.com/@danieldoporto_'), E(curto)), tt_date(r['publicado']).strftime('%d/%m'), f'<span class="n">{fmt(int(r["views"]))}</span>', r['likes'], r['shares']]
 tts = sorted(tt, key=lambda r: -int(r['views']))
 A(f'''<section id="tt"><div class="kick">TikTok · @danieldoporto</div><h2>Alcance sem conversão</h2><div class="rule"></div>
@@ -409,7 +431,7 @@ A(f'''<section id="funil"><div class="kick">Leitura cruzada</div><h2>Onde o púb
 <div class="box warn"><b>O vazamento está no último passo.</b> A bio convence (63% de quem visita passa a seguir), mas só 11 pessoas foram ao Linktree. Os cortes não pedem esse passo de forma consistente, o link não aparece nos stories e metade das 92 conversas do direct ficou sem resposta. {HYP}</div>
 <h3>O papel de cada rede</h3>{table(['Rede','Hoje','Em outubro','Por quê'], [
  ['Instagram','Descoberta (um viral)','Descoberta + ponte para o Linktree','87,5% das views de não seguidores; 754 seguidores'],
- ['YouTube','Aprofundamento','Onde o episódio acontece','Todos os inscritos vieram de vídeos longos'],
+ ['YouTube','Aprofundamento','Onde o episódio acontece','23 dos 30 inscritos vieram dos episódios; Shorts, nenhum'],
  ['TikTok','Sem papel definido','Teste de descoberta por 4 semanas','5.428 views, 12 visitas, +1 seguidor'],
  ['Spotify','Arquivo','Arquivo, com link em todo episódio','19 plays nos 4 episódios']])}
 <h3>O que funcionou em mais de uma rede</h3><ul>
@@ -423,7 +445,7 @@ mix = lambda f: f'{cnt(lambda c: c["funil"] == f)} de {N} ({cnt(lambda c: c["fun
 A(f'''<section id="estr"><div class="kick">Estratégia de outubro</div><h2>Crescer alcance e levar ao episódio</h2><div class="rule"></div>
 {table(['','O quê','Por quê'], [
  ['<b>Manter</b>','Reels de 40–55 s como formato principal',f'Post típico de reel: {fmt(med("views", reels))} views, contra {fmt(med("views", car))} dos carrosséis'],
- ['<b>Manter</b>','Episódio completo toda semana no YouTube','Os episódios trouxeram os inscritos do mês (EP 01: 14)'],
+ ['<b>Manter</b>','Episódio completo toda semana no YouTube','23 dos 30 inscritos vieram dos episódios (EP 01: 14)'],
  ['<b>Manter</b>','Número ou fato forte na primeira frase','Mais compartilhados com alcance acima de mil: "carga dita o mercado" 3,18%, Inpasa 2,97%, primeira atracação 2,19%'],
  ['<b>Parar</b>','Mandar para outras contas no fim do vídeo','Dispersa o clique: 11 cliques no Linktree em 1,2 mil visitas'],
  ['<b>Parar</b>','Copiar a legenda do Instagram no TikTok','0 comentários e 12 visitas ao perfil em 5.428 views'],
@@ -457,8 +479,9 @@ for i in range(35):
     cells += f'<div class="gd{" off" if off else ""}">{inner}</div>'
 A(f'''<section id="cal" class="land"><div class="kick">Calendário</div><h2>Outubro de 2026</h2><div class="rule"></div>
 <div class="leg">''' + ''.join(f'<span><i style="background:{v[1]}"></i>{k} ({v[0].lower()})</span>' for k, v in PILAR.items()) + f'''<span><i style="background:#fff;border:1.5px solid #0B1A33"></i>Episódio completo</span></div>
+<p class="note" style="margin:0 0 5px;color:#C0392B"><b>Plano B do EP 04:</b> se o episódio não estiver gravado até 02/10, a semana de 05/10 usa 3 cortes do acervo (prontos na planilha) e os episódios passam uma semana para frente.</p>
 <div class="grid">{cells}</div>
-<p class="note">Cada corte sai no mesmo dia no Instagram (Reels), no TikTok e no YouTube Shorts. Stories todos os dias. Horário dos cortes em teste: 12h nas semanas de 01, 05 e 19/10; 19h nas semanas de 12 e 26/10.</p></section>''')
+<p class="note">Cada corte sai no mesmo dia no Instagram (Reels), no TikTok e no YouTube Shorts. Stories todos os dias. Horário dos cortes em teste: 12h nas semanas de 01, 05 e 12/10; 19h nas semanas de 19 e 26/10 (o feriado de 12/10 não entra no bloco das 19h).</p></section>''')
 
 # metas e testes
 metas = [('Instagram', 'Views no post típico (reel)', med('views', reels), 1500, lambda v: fmt(v)),
@@ -469,7 +492,7 @@ metas = [('Instagram', 'Views no post típico (reel)', med('views', reels), 1500
          ('YouTube', 'Views no Short típico', st.median(int(r['views']) for r in shorts), 100, fmt),
          ('TikTok', 'Views no vídeo típico', tt_med, 400, fmt),
          ('TikTok', 'Seguidores', 20, 60, fmt),
-         ('Spotify', 'Plays no mês', 19, 40, fmt)]
+         ('Spotify', 'Plays nos 30 primeiros dias (soma dos episódios)', 19, 40, fmt)]
 A('<section id="metas"><div class="kick">Metas e testes</div><h2>Onde queremos chegar em outubro</h2><div class="rule"></div>')
 A(table(['Rede', 'Indicador', 'Setembro', 'Meta de outubro', 'Realizado em outubro'],
         [[r, i, f'<span class="n">{f(b)}</span>', f'<b>{f(m) if "sem" not in f(m) else fmt(m)}</b>', '<span class="note">no próximo relatório</span>'] for r, i, b, m, f in metas]))
@@ -484,8 +507,7 @@ A('<h3>Testes do mês</h3>' + table(['Teste', 'O que queremos descobrir', 'Como 
 A(f'''<section id="passos"><div class="kick">Aprendizados e próximos passos</div><h2>O que já sabemos e o que precisa acontecer</h2><div class="rule"></div>
 <div class="box blue"><b>Aprendizados acumulados</b> — lista que só cresce; com o tempo vira o manual do perfil<ol>{''.join(f'<li>{x} <span class="note">(set/26)</span></li>' for m in MESES for x in hist['meses'][m]['aprendizados'])}</ol></div>
 {table(['O quê','Quem','Até'], [
- ['Confirmar convidados e datas dos EP 04 a 07','<b>Cliente</b>','02/10'],
- ['Corrigir "Larissa Souza" para <b>Sousa</b> no título do EP 03 no Spotify','Social media','01/10'],
+ ['Confirmar convidados e datas dos EP 04 a 07 — se o EP 04 não estiver gravado, ativar o plano B da semana de 05/10','<b>Cliente</b>','02/10'],
  ['Responder as mensagens do direct em até 24 h (hoje metade fica sem resposta)','<b>Cliente / Daniel</b>','contínuo'],
  ['Colocar o link do Linktree nos stories todos os dias','Social media','a partir de 01/10'],
  ['Tirar dos cortes as chamadas para outras contas; CTA único para o episódio','Social media e edição','01/10'],
@@ -504,11 +526,11 @@ A(f'''<section id="passos"><div class="kick">Aprendizados e próximos passos</di
 <dt>Viral / ponto fora da curva</dt><dd>Um post muito acima do normal da conta, como a Inpasa.</dd></dl></section>''')
 
 # anexo
-igrow = lambda r: [link(r['link'], E(ident(r['texto'])[1])), ig_time(r['data']).strftime('%d/%m %Hh'), 'Reel' if 'reel' in r['tipo'] else 'Carrossel',
+igrow = lambda r: [link(r['link'], E(ig_thumb(r)[1])), ig_time(r['data']).strftime('%d/%m %Hh'), 'Reel' if 'reel' in r['tipo'] else 'Carrossel',
                    f'<span class="n">{fmt(int(r["views"]))}</span>', f'<span class="n">{fmt(int(r["alcance"]))}</span>', pctf(r['eng_alc'], 1), pctf(r['comp_alc'], 2), r['seg']]
 A('<section id="anexo"><div class="kick">Anexo</div><h2>Tabelas completas</h2><div class="rule"></div><h3>Instagram — posts do perfil (métricas até 30/09)</h3>')
 A(table(['Post', 'Data', 'Formato', 'Views', 'Alcance', 'Engaj.', 'Compart.', 'Seg.'], [igrow(r) for r in sorted(ig, key=lambda r: ig_time(r['data']))]))
 A('<p class="note">Engaj. = curtidas + comentários + salvamentos + compartilhamentos, dividido pelo alcance. Posts de outras contas (colaborações) ficam fora porque vieram sem alcance no export.</p>')
-A('<h3>YouTube — vídeos de 2026 (02–30/09)</h3>' + table(['Vídeo', 'Publicado', 'Views', 'Assistido', 'Horas', 'Inscritos'], [ytline(r)[1:] for r in sorted(yt, key=lambda r: -int(r['views']))]))
+A('<h3>YouTube — vídeos de 2026 (02–30/09)</h3>' + table(['Vídeo', 'Formato', 'Publicado', 'Views', 'Assistido', 'Horas', 'Inscritos'], [ytline(r)[1:2] + [r['formato']] + ytline(r)[2:] for r in sorted(yt, key=lambda r: -int(r['views']))]))
 A('<h3>TikTok — vídeos de setembro</h3>' + table(['Vídeo', 'Publicado', 'Views', 'Curt.', 'Comp.'], [ttline(r)[1:] for r in tts]) + '</section></body></html>')
 open(P('relatorio_v2.html'), 'w', encoding='utf-8').write('\n'.join(H)); print('html v2 ok')

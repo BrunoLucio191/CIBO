@@ -151,7 +151,23 @@ dicionário alimenta PDF, planilha e textos) e confira:
 - Renderize e olhe cada página: nada transbordando para uma página quase vazia, rótulos de gráfico
   sem sobreposição, sumário com as páginas certas.
 - Sem a pauta dos episódios futuros, use o acervo (transcrições) para cortes com trecho e gancho
-  reais; confira cada gancho contra a fala (sem acrescentar lugar, número ou fato).
+  reais; confira cada gancho contra a fala (sem acrescentar lugar, número ou fato) e contra os cortes
+  já feitos (um trecho que já está dentro de outro corte não conta como novo).
+- **Nada do calendário já publicado:** cruze cada corte planejado com os exports (o "Presidente mais
+  jovem" planejado para 02/10 já tinha saído em 30/09).
+- **Prazo possível:** se o conteúdo depende de algo ainda não confirmado (convidado/gravação do
+  episódio), coloque um **plano B** no calendário e na planilha, com cortes reais do acervo.
+- **Base e meta na mesma medida** (ex.: plays nos 30 primeiros dias x plays no mês não se comparam).
+- **Testes sem distorção:** feriado ou evento fora do padrão não cai só num dos braços do teste.
+- A mesma afirmação escrita igual em todas as páginas (ex.: "23 dos 30 inscritos vieram dos
+  episódios", não "todos" em outra página).
+- **Nenhuma miniatura vazia:** capas locais dos cortes → miniatura do TikTok por oEmbed
+  (`https://www.tiktok.com/oembed?url=<link>` → `thumbnail_url`) → Instagram
+  (`https://www.instagram.com/p/<shortcode>/media/?size=m`) → YouTube (`i.ytimg.com/vi/<id>/mqdefault.jpg`).
+  Nenhuma legenda original no lugar de título curto; no anexo, coluna de formato (episódio x Short).
+- **Texto do PDF copiável:** fonte de marca nos títulos com `font-variant-ligatures:none;
+  font-feature-settings:'liga' 0,'calt' 0,'kern' 0` (sem isso o texto extraído saiu "Oqueaconteceu",
+  "perfi l"). Confira com `pdftotext`.
 - Exports do Meta vêm em UTF-16 e com horário 4 h atrás de Brasília (UTC−7). Zips com nome
   acentuado: descompacte com Python (unzip falha). Confirme a capacidade de produção vigente e anote
   no contexto do mês qualquer mudança de volume (ex.: 3 → 5 cortes por semana).
