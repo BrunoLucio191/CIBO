@@ -88,9 +88,9 @@ O valor está na comparação de um mês com o outro. O primeiro relatório de u
 **Dois documentos, dois públicos:**
 - **Relatório do cliente (PDF, 10–13 páginas), sempre com a mesma estrutura e a mesma ordem:**
   1. Capa limpa: nome do cliente/podcast, o que o relatório cobre, redes, período e data de entrega.
-     Sem rótulo de versão ("v2"), sem frase "Preparado por" e sem linha de série na capa. A marca de
-     quem faz (ex.: logo da Begrow) vai **no rodapé esquerdo de todas as páginas internas**, com o
-     número da página à direita. Sem quebras de linha no meio de datas/fontes.
+     Sem rótulo de versão ("v2"), sem frase "Preparado por" e sem linha de série na capa. Rodapé só
+     com o número da página: o logo de quem faz no rodapé foi testado e recusado pelo usuário.
+     Sem quebras de linha no meio de datas/fontes.
   2. Resumo executivo (1 página): KPIs, 5 achados **começando pela conquista** e depois o risco,
      5 decisões, sumário com páginas e a caixa **Contexto do mês** (volume publicado, formatos,
      convidados, viral, mudanças, tráfego pago).
@@ -114,9 +114,7 @@ O valor está na comparação de um mês com o outro. O primeiro relatório de u
 - Gere o PDF a partir de HTML: `scripts/html_to_pdf.sh relatorio.html relatorio.pdf` (Chrome
   headless). Cabeçalho/rodapé com número de página via `@page { @bottom-right { content:
   counter(page) } }`; `@page land { size: A4 landscape }` para a grade; fonte da marca via
-  `@font-face` com `file://`. Logo no rodapé: `@page { @bottom-left { content:url('<svg data URI>') } }`,
-  com o PNG embrulhado num SVG de 30×30 (define o tamanho impresso sem perder resolução); na capa,
-  `@page capa { @bottom-left { content:none } }`. Exemplo completo: `references/exemplo_gerador_bombordo.py`.
+  `@font-face` com `file://`. Exemplo completo: `references/exemplo_gerador_bombordo.py`.
 - Identidade: cores da marca dentro das páginas (aberturas de seção, cabeçalho, rodapé), não só na
   capa. Gráficos no lugar de listas: curva diária com o pico anotado, funil desenhado, barras de meta.
   Carregue a skill `dataviz` antes do primeiro gráfico.

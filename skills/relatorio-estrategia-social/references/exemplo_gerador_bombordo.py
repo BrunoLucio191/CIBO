@@ -269,8 +269,7 @@ A(f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Bombo
 @font-face {{ font-family:'Cal Sans'; src:url('file://{font}'); }}
 @page {{ size:A4; margin:18mm 14mm 16mm;
   @top-left {{ content:'Bombordo e Boreste · Relatório de setembro 2026'; font:8pt -apple-system,Helvetica,sans-serif; color:#5B6678; }}
-    @bottom-right {{ content:counter(page); font:8pt -apple-system,Helvetica,sans-serif; color:#0B1A33; }}
-  @bottom-left {{ content:url('{BEGROW_SVG}'); vertical-align:middle; }} }}
+    @bottom-right {{ content:counter(page); font:8pt -apple-system,Helvetica,sans-serif; color:#0B1A33; }} }}
 @page capa {{ margin:0; @top-left {{ content:none; }} @bottom-right {{ content:none; }} @bottom-left {{ content:none; }} }}
 @page land {{ size:A4 landscape; margin:16mm 12mm 14mm; }}
 :root {{ --navy:#0B1A33; --blue:#4F95FF; --ink:#1B2433; --mut:#5B6678; --line:#E3E8F0; --soft:#F2F6FC; }}
