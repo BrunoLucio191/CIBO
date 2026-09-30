@@ -81,33 +81,73 @@ e **espere a aprovação**. Só siga para a estratégia depois do ok; incorpore 
 7. **Metas por plataforma**: base atual → meta realista (justifique a meta pelo histórico).
 8. **O que coletar no fim do mês** para o próximo relatório (exports, prints, períodos).
 
-## Entrega
-- **PDF** em português, visual limpo e profissional, com as cores/logo do cliente se houver.
-  Estrutura fixa: capa → resumo executivo (1 página: 5 principais achados e 5 principais
-  decisões) → diagnóstico por plataforma → leitura cruzada e funil → estratégia → calendário →
-  metas e testes → anexo com as tabelas completas.
-- Gráficos e tabelas onde facilitam a leitura (carregue a skill `dataviz` antes do primeiro
-  gráfico). Números de uma plataforma nunca no mesmo eixo de outra.
-- Gere o PDF a partir de HTML: `scripts/html_to_pdf.sh relatorio.html relatorio.pdf`
-  (Chrome headless, A4). Confira o PDF página a página (quebras de tabela, calendário legível).
-- **Planilha do calendário**, uma linha por conteúdo, para produção:
-  `python3 scripts/calendario_xlsx.py calendario.json calendario.xlsx` (colunas na ordem do item 5,
-  cabeçalho congelado, filtros, colunas de status/responsável/link em branco para a equipe).
-- Organize a pasta de saída: `entrega/Relatorio_<Cliente>_<AAAA-MM>.pdf`,
-  `entrega/Calendario_<Cliente>_<AAAA-MM>.xlsx`, e `trabalho/` com os CSVs normalizados.
+## Entrega — o relatório é uma série mensal
+O valor está na comparação de um mês com o outro. O primeiro relatório de um cliente é o **mês base**
+(diga isso na capa e na página de evolução); as comparações começam no mês seguinte.
 
-## Checagem antes de entregar
-- Todo número do PDF encontrado nos CSVs/prints (confira por amostragem os 10 mais citados).
-- Nenhuma comparação de métrica bruta entre plataformas; hipóteses marcadas.
-- Resumo executivo cabe em 1 página; calendário tem todas as colunas preenchidas.
-- Quantidade de posts por semana ≤ capacidade de produção informada.
-- A planilha e o calendário do PDF têm os mesmos conteúdos. No PDF, o calendário vai em **página
-  paisagem** (`@page land { size: A4 landscape }`) e um corte publicado em várias plataformas no
-  mesmo dia vira uma linha só (com CTA e meta por plataforma); na planilha, uma linha por publicação.
-  Em retrato, com uma linha por plataforma, 80 conteúdos viraram 15 páginas ilegíveis.
-- Sem a pauta dos episódios futuros, use o acervo (transcrições dos episódios já gravados) para
-  cortes com tema, trecho e gancho reais, e regras fixas de gancho por tipo para os episódios novos.
-- Confira cada gancho/tema tirado de transcrição contra o trecho: não acrescente lugar, número ou
-  fato que a fala não diz.
-- Exports do Meta vêm em UTF-16 e com horário 4 h atrás de Brasília (UTC−7): converta antes de
-  falar de dia/horário. Zips com nome acentuado: descompacte com Python (unzip falha).
+**Dois documentos, dois públicos:**
+- **Relatório do cliente (PDF, 10–13 páginas), sempre com a mesma estrutura e a mesma ordem:**
+  1. Capa: marca do cliente/podcast como principal, "Preparado por <marca de quem faz>", data de
+     entrega, número do relatório na série e versão. Sem quebras de linha no meio de datas/fontes.
+  2. Resumo executivo (1 página): KPIs, 5 achados **começando pela conquista** e depois o risco,
+     5 decisões, sumário com páginas e a caixa **Contexto do mês** (volume publicado, formatos,
+     convidados, viral, mudanças, tráfego pago).
+  3. **Evolução**: quadro com uma coluna por mês e linhas fixas (views, alcance, seguidores, visitas,
+     cliques no link, inscritos, CTR, horas, plays **e o volume publicado por formato**), lido de
+     `metricas/historico_<cliente>.json`, que o gerador atualiza a cada mês. Logo abaixo,
+     **Fechamento do plano anterior**: planejado x publicado, metas atingidas ou não, resultado de cada
+     teste com a decisão tomada (no mês base, diga que começa no próximo).
+  4. Uma página por plataforma (KPIs, gráfico, rankings com miniatura, título curto e link clicável).
+  5. Funil desenhado e papel de cada rede. 6. Estratégia (manter/parar/testar, pilares, mix, semana-
+     tipo e **regras que se repetem escritas uma vez só**: CTA padrão por plataforma, critério de
+     sucesso por tipo). 7. **Calendário como grade do mês em uma página** (paisagem, cor por pilar).
+  8. Metas e testes: quadro **meta x realizado** que se repete todo mês. 9. **Aprendizados
+     acumulados** (lista que só cresce, com o mês de origem), próximos passos com **responsável e
+     prazo** (destaque o que depende do cliente) e glossário curto. 10. Anexo com as tabelas.
+- **Planilha de produção (xlsx)**: uma linha por publicação com trecho/minutagem, gancho, estrutura,
+  CTA, critério de sucesso, status, responsável e link; aba **Regras** com o que se repete e a lista
+  do que coletar no fim do mês. Coisas internas (minutagem, "corte já editado", o que exportar) ficam
+  aqui, nunca no PDF do cliente. `python3 scripts/calendario_xlsx.py calendario.json saida.xlsx`
+  (aceita `{"rows": [...], "regras": [...]}`).
+- Gere o PDF a partir de HTML: `scripts/html_to_pdf.sh relatorio.html relatorio.pdf` (Chrome
+  headless). Cabeçalho/rodapé com número de página via `@page { @bottom-right { content:
+  counter(page) } }`; `@page land { size: A4 landscape }` para a grade; fonte da marca via
+  `@font-face` com `file://`. Exemplo completo: `references/exemplo_gerador_bombordo.py`.
+- Identidade: cores da marca dentro das páginas (aberturas de seção, cabeçalho, rodapé), não só na
+  capa. Gráficos no lugar de listas: curva diária com o pico anotado, funil desenhado, barras de meta.
+  Carregue a skill `dataviz` antes do primeiro gráfico.
+- Pasta de saída: `entrega/Relatorio_<Cliente>_<AAAA-MM>.pdf`, `entrega/Calendario_<Cliente>_<AAAA-MM>_producao.xlsx`,
+  `trabalho/` com os CSVs normalizados e o gerador.
+
+## Análise orientada ao objetivo
+- Objetivo de crescimento/alcance: ranqueie por **compartilhamentos por alcance** e **seguidores por
+  mil de alcance** (com alcance mínimo, ex.: 500). Engajamento por alcance cai quando o post chega em
+  quem não segue, e joga os posts de maior alcance para o "bottom 5".
+- Regra tirada de um único post (ex.: horário do viral) vira **teste**, não regra.
+- Troque jargão por linguagem simples ("post típico" em vez de mediana, "cliques na miniatura" para
+  CTR, "ponto fora da curva" para outlier) e mantenha um glossário curto.
+
+## Checagem antes de entregar (consistência interna)
+Um número que não bate faz o cliente desconfiar do resto. Gere tudo de uma fonte única (o mesmo
+dicionário alimenta PDF, planilha e textos) e confira:
+- Todo número do PDF encontrado nos CSVs/prints; valores arredondados do painel (125,3K) aparecem
+  arredondados, nunca como exatos.
+- Um só número por métrica. Quando duas fontes diferem (painel x soma dos posts), use uma e explique
+  a outra numa nota.
+- Frases de proporção ("3 de cada 5", "16 de topo") recalculadas a partir do calendário final, nunca
+  escritas à mão. Pilar → etapa do funil é um mapa fixo (um pilar nunca muda de etapa); pilar
+  "números" só com número de verdade.
+- Semana-tipo = calendário: nenhum corte fora dos dias prometidos (valide com `assert` no gerador);
+  posts por semana ≤ capacidade informada.
+- Funcionamento: nenhum CTA aponta para algo que ainda não existe (a chamada do episódio sai depois
+  do episódio no ar).
+- Formatos padronizados: datas dd/mm, vírgula decimal, títulos curtos escritos à mão (nunca cortados
+  no meio da palavra), só itens do período (tire vídeos antigos do anexo).
+- Hipóteses marcadas; nenhuma comparação de métrica bruta entre plataformas.
+- Renderize e olhe cada página: nada transbordando para uma página quase vazia, rótulos de gráfico
+  sem sobreposição, sumário com as páginas certas.
+- Sem a pauta dos episódios futuros, use o acervo (transcrições) para cortes com trecho e gancho
+  reais; confira cada gancho contra a fala (sem acrescentar lugar, número ou fato).
+- Exports do Meta vêm em UTF-16 e com horário 4 h atrás de Brasília (UTC−7). Zips com nome
+  acentuado: descompacte com Python (unzip falha). Confirme a capacidade de produção vigente e anote
+  no contexto do mês qualquer mudança de volume (ex.: 3 → 5 cortes por semana).
