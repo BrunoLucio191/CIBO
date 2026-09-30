@@ -8,7 +8,7 @@
   "filmburn":"/path/filmburn_blue_with_audio.mp4",
   "click_gain": 0.11,
   "mix": {
-    "music_db": -21,
+    "music_db": -27,
     "duck_threshold": 0.08,
     "duck_ratio": 5,
     "outro_burn_db": -6,

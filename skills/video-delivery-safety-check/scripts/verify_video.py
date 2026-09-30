@@ -39,24 +39,60 @@ def cadence(path: Path, duration: float, fps: float) -> dict:
     return {"unique": unique, "total": total, "ratio": round(unique / total, 3)}
 
 
-def shots(path: Path, limiar: float = 35.0, debounce: int = 3) -> list[int]:
+def small_frames(path: Path):
+    """Todos os quadros reduzidos a 160x90 em cinza (int16), ou None."""
+    # binario, nao texto: sao pixels crus
+    proc = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path),
+                           "-vf", "scale=160:90,format=gray", "-f", "rawvideo", "-"],
+                          capture_output=True)
+    if proc.returncode:
+        return None
+    import numpy as np  # noqa: PLC0415
+    dados = np.frombuffer(proc.stdout, dtype=np.uint8)
+    n = 160 * 90
+    quadros = dados[:len(dados) // n * n].reshape(-1, n).astype(np.int16)
+    return quadros if len(quadros) >= 2 else None
+
+
+def micro_inserts(quadros, limiar: float = 35.0, max_frames: int = 4) -> list[dict]:
+    """Pedaco de 1 a 4 quadros entre dois cortes: o "flash" na troca de angulo.
+
+    Nasceu de dois defeitos que o usuario pegou depois da entrega (Bombordo, "O que
+    e Bombordo e Boreste"; Malu, reel 01 aos 30 s): um quadro de outra camera, ou
+    do plano novo com o crop antigo, entre dois planos. O `shots()` agrupa picos a
+    3 quadros e funde os dois cortes num so, entao o plano curto nao aparece la.
+    Um quadro de dissolve (media dos vizinhos) nao conta: so o que foge dos dois.
+    """
+    import numpy as np  # noqa: PLC0415
+    if quadros is None:
+        return []
+    diff = np.abs(np.diff(quadros, axis=0)).mean(axis=1)
+    picos = [i + 1 for i, d in enumerate(diff) if d >= limiar]
+    achados = []
+    for a, b in zip(picos, picos[1:]):
+        j = b - a
+        if j > max_frames:
+            continue
+        antes, depois = quadros[a - 1], quadros[b]
+        meio = quadros[a:b].mean(axis=0)
+        # dissolve: o trecho do meio e a mistura dos vizinhos
+        if np.abs(meio - (antes + depois) / 2).mean() < limiar / 2:
+            continue
+        achados.append({"frame": int(a), "frames": int(j)})
+    return achados
+
+
+def shots(path: Path, limiar: float = 35.0, debounce: int = 3, quadros=None) -> list[int]:
     """Planos de camera, pelo mesmo metodo de absdiff usado no reenquadramento.
 
     O filtro `scene` do ffmpeg nao acusa um corte de crop dentro de um plano
     continuo, que e exatamente o defeito que aparece quando o reenquadramento
     automatico salta. Comparar frames reduzidos acusa.
     """
-    # binario, nao texto: sao pixels crus
-    proc = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path),
-                           "-vf", "scale=160:90,format=gray", "-f", "rawvideo", "-"],
-                          capture_output=True)
-    if proc.returncode:
-        return []
     import numpy as np  # noqa: PLC0415
-    dados = np.frombuffer(proc.stdout, dtype=np.uint8)
-    n = 160 * 90
-    quadros = dados[:len(dados) // n * n].reshape(-1, n).astype(np.int16)
-    if len(quadros) < 2:
+    if quadros is None:
+        quadros = small_frames(path)
+    if quadros is None:
         return []
     diff = np.abs(np.diff(quadros, axis=0)).mean(axis=1)
     # 35 foi calibrado em material real: corte de camera de verdade deu 68 e 89,
@@ -267,8 +303,17 @@ def main() -> None:
     if args.min_shot > 0:
         # a capa e os dois burns de transicao contam como corte; ficam de fora
         margem = 1.0
-        cortes = [c for c in shots(args.video)
+        quadros = small_frames(args.video)
+        cortes = [c for c in shots(args.video, quadros=quadros)
                   if margem < c / actual_fps < duration - margem]
+        soltos = [{"inicio": round(m["frame"] / actual_fps, 3), "quadros": m["frames"]}
+                  for m in micro_inserts(quadros)
+                  if margem < m["frame"] / actual_fps < duration - margem]
+        if soltos:
+            errors.append({"code": "frame_solto", "events": soltos,
+                           "hint": "1 a 4 quadros entre dois cortes (flash na troca de angulo "
+                                   "ou crop atrasado um quadro): adiantar o keyframe do crop "
+                                   "1 quadro no job, ou sobrepor o quadro vizinho no render"})
         limites = [0.0] + [c / actual_fps for c in cortes] + [duration]
         planos = [round(limites[i + 1] - limites[i], 2) for i in range(len(limites) - 1)]
         curtos = [{"inicio": round(limites[i], 2), "duracao": planos[i]}

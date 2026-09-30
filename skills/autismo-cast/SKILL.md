@@ -196,6 +196,14 @@ These all shipped once. Do not rediscover them.
     count across the original cue's span. Caught by `caption-quality-gate`'s
     `block_long` warning — run it on every delivered clip, not just a visual
     spot-check.
+18. **Full-episode clean edit ships with audio that stops early.** Cutting several
+    segments of a ~1 h episode with multiple `trim`/`atrim` of the same input in one
+    filter graph produced 59:56 of video but only 4:17 of audio, and ffmpeg still
+    exited with code 0. Decode the audio to a full WAV and cut it there (`-ss S -t D -i full.wav`);
+    cut the video separately and mux them with `-c:v copy`. Pick every IN/OUT from **word-level**
+    Whisper, not segment timestamps: a "um, dois, três, vai" count-in hid inside a
+    segment. After the render, confirm the audio and video stream durations match
+    with `ffprobe`, and transcribe the audio around each join in the rendered file.
 
 ## Rules that matter
 

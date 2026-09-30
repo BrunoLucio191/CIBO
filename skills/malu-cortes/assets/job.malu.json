@@ -1,0 +1,575 @@
+{
+ "name": "01 - A diferença entre a zeólita grossa e a fina",
+ "version": "",
+ "src": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/01_sources/masters/C0097.MP4",
+ "rotate": "clock",
+ "out_dir": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/06_deliverables",
+ "work": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/04_work/v2/reel01",
+ "grade": "rec709",
+ "in": 26.55,
+ "out": 115.1,
+ "cuts": [
+  [
+   29.98,
+   38.25
+  ],
+  [
+   40.04,
+   40.31
+  ],
+  [
+   42.64,
+   45.19
+  ],
+  [
+   46.4,
+   46.6
+  ],
+  [
+   48.36,
+   48.8
+  ],
+  [
+   54.88,
+   55.35
+  ],
+  [
+   58.6,
+   59.12
+  ],
+  [
+   60.74,
+   74.97
+  ],
+  [
+   76.73,
+   77.32
+  ],
+  [
+   80.56,
+   82.36
+  ],
+  [
+   86.3,
+   87.45
+  ],
+  [
+   93.1,
+   93.55
+  ],
+  [
+   94.75,
+   96.19
+  ],
+  [
+   98.8,
+   101.28
+  ],
+  [
+   105.1,
+   108.41
+  ],
+  [
+   112.07,
+   112.36
+  ]
+ ],
+ "framings": [
+  [
+   591,
+   979,
+   1300,
+   2312
+  ],
+  [
+   485,
+   897,
+   1500,
+   2666
+  ],
+  [
+   774,
+   1092,
+   1050,
+   1866
+  ],
+  [
+   568,
+   878,
+   1500,
+   2666
+  ],
+  [
+   655,
+   989,
+   1300,
+   2312
+  ],
+  [
+   726,
+   1058,
+   1050,
+   1866
+  ],
+  [
+   597,
+   1003,
+   1300,
+   2312
+  ],
+  [
+   708,
+   1097,
+   1050,
+   1866
+  ],
+  [
+   408,
+   869,
+   1500,
+   2666
+  ],
+  [
+   521,
+   968,
+   1300,
+   2312
+  ],
+  [
+   567,
+   1090,
+   1050,
+   1866
+  ],
+  [
+   463,
+   878,
+   1500,
+   2666
+  ],
+  [
+   572,
+   1001,
+   1300,
+   2312
+  ],
+  {
+   "w": 1050,
+   "h": 1866,
+   "kx": [
+    [
+     0.0,
+     693
+    ],
+    [
+     0.3,
+     702
+    ],
+    [
+     0.6,
+     740
+    ],
+    [
+     0.9,
+     788
+    ],
+    [
+     1.2,
+     817
+    ],
+    [
+     1.5,
+     821
+    ],
+    [
+     1.8,
+     793
+    ],
+    [
+     2.1,
+     752
+    ],
+    [
+     2.4,
+     724
+    ],
+    [
+     2.5,
+     720
+    ]
+   ],
+   "ky": [
+    [
+     0.0,
+     1073
+    ],
+    [
+     0.3,
+     1073
+    ],
+    [
+     0.6,
+     1073
+    ],
+    [
+     0.9,
+     1073
+    ],
+    [
+     1.2,
+     1073
+    ],
+    [
+     1.5,
+     1073
+    ],
+    [
+     1.8,
+     1073
+    ],
+    [
+     2.1,
+     1073
+    ],
+    [
+     2.4,
+     1075
+    ],
+    [
+     2.5,
+     1075
+    ]
+   ]
+  },
+  [
+   580,
+   909,
+   1500,
+   2666
+  ],
+  [
+   580,
+   1007,
+   1300,
+   2312
+  ],
+  [
+   685,
+   1110,
+   1050,
+   1866
+  ]
+ ],
+ "shots": [
+  [
+   26.55,
+   29.98,
+   0
+  ],
+  [
+   38.25,
+   40.04,
+   1
+  ],
+  [
+   40.31,
+   42.64,
+   2
+  ],
+  [
+   45.19,
+   46.4,
+   3
+  ],
+  [
+   46.6,
+   48.36,
+   4
+  ],
+  [
+   48.8,
+   54.88,
+   5
+  ],
+  [
+   55.35,
+   58.6,
+   6
+  ],
+  [
+   59.12,
+   60.74,
+   7
+  ],
+  [
+   74.97,
+   76.73,
+   8
+  ],
+  [
+   77.32,
+   80.56,
+   9
+  ],
+  [
+   82.36,
+   86.3,
+   10
+  ],
+  [
+   87.45,
+   93.1,
+   11
+  ],
+  [
+   93.55,
+   94.75,
+   12
+  ],
+  [
+   96.19,
+   98.8,
+   13
+  ],
+  [
+   101.28,
+   105.1,
+   14
+  ],
+  [
+   108.41,
+   112.07,
+   15
+  ],
+  [
+   112.36,
+   115.1,
+   16
+  ]
+ ],
+ "anchor_y": 0.33,
+ "smooth_zooms": [
+  [
+   0.0,
+   6.0
+  ],
+  [
+   17.56,
+   22.73
+  ],
+  [
+   32.18,
+   38.18
+  ]
+ ],
+ "captions": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/04_work/v2/reel01/captions.json",
+ "caption_words": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/04_work/v2/reel01/v5_whisper-large-v3-mlx.json",
+ "caption_fixes": {
+  "turita,": "Turiita,",
+  "pra": "pra"
+ },
+ "caption_font": "/Users/bruno/.claude/skills/malu-cortes/assets/fonts/Montserrat[wght].ttf",
+ "caption_weight": [
+  300
+ ],
+ "key_font": "/Users/bruno/.claude/skills/malu-cortes/assets/fonts/Montserrat[wght].ttf",
+ "key_weight": [
+  600
+ ],
+ "key_scale": 1.12,
+ "keywords": [
+  "micronização",
+  "grossas",
+  "intoxicada",
+  "fina",
+  "toxina",
+  "protocolo",
+  "desconforto"
+ ],
+ "letterings": [],
+ "fx": false,
+ "broll": [
+  {
+   "file": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/03_assets/stock_local_only/pexels/hq_9465540.mp4",
+   "ss": 2.0,
+   "start": 51.42,
+   "end": 55.0,
+   "fala": "se tem o intestino preso, a gente começa pela mais grossa",
+   "edit_start": 13.19,
+   "edit_end": 17.04
+  },
+  {
+   "file": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/03_assets/stock_local_only/pexels/hq_5712806.mp4",
+   "ss": 14.0,
+   "start": 77.32,
+   "end": 80.56,
+   "fala": "manchou a camisa, o suor, por sair de toxina",
+   "edit_start": 23.09,
+   "edit_end": 27.48
+  },
+  {
+   "file": "/Volumes/SSD/Movies/Edição/Mídia/fernandaBen/malu/03_assets/stock_local_only/pexels/hq_13107036.mp4",
+   "ss": 0.6,
+   "start": 108.41,
+   "end": 112.07,
+   "fala": "primeiro você toma 40 dias a mais grossa, depois vai pra outra",
+   "edit_start": 43.71,
+   "edit_end": 47.37
+  }
+ ],
+ "music": {
+  "file": "/Volumes/SSD/Movies/Edição/Mídia/gravaçõesSEBRAE/content_hub_assets/music/motivating_mornings_ahjay_stelino.mp3",
+  "name": "Motivating Mornings - Ahjay Stelino (Mixkit, licença livre)",
+  "db": -27.5,
+  "offset": "auto",
+  "track_end": 93.2
+ },
+ "sfx_db": -8,
+ "lufs": -14,
+ "rec709_eq": "eq=contrast=1.0:saturation=0.98",
+ "shift": 1150,
+ "duck_threshold": 0.015,
+ "tail_hold": 0.8,
+ "zoom_in": 0.3,
+ "brand_terms": {
+  "turi\\W?i?ta|turita": "Turi-Ita"
+ },
+ "ref_push": 0.06,
+ "caption_pins": {
+  "“Toxina.”": 91.07,
+  "Ou você diminui": 91.75
+ },
+ "whoosh_post": 0.1,
+ "cortes_revisados": [
+  48.36,
+  74.97,
+  80.56,
+  96.19
+ ],
+ "click_lead": 0.3,
+ "shot_levels": [
+  1,
+  0,
+  2,
+  0,
+  1,
+  2,
+  1,
+  2,
+  0,
+  1,
+  2,
+  0,
+  1,
+  2,
+  0,
+  1,
+  2
+ ],
+ "face_pos": [
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.33
+  ],
+  [
+   0.44,
+   0.36
+  ]
+ ],
+ "zoom_center_face": true,
+ "zoom_amount": 0.14,
+ "key_style": "plain",
+ "caption_glow": 0.4,
+ "camera_engine": "malu",
+ "caption_engine": "kinetic",
+ "audio16k": "<02_transcripts/MASTER_16k.wav>",
+ "word_timing": "<work>/edit_whisper-large-v3-mlx.json",
+ "kinetic": {
+  "highlights": [
+   "<palavra-chave em ordem de fala>",
+   "<frase#2 = segunda ocorrencia>"
+  ]
+ },
+ "camera_moves": [
+  {
+   "t": 0.0,
+   "kind": "punch",
+   "amount": 0.14,
+   "in": 0.3,
+   "until": 6.0
+  },
+  {
+   "t": 16.6,
+   "kind": "push",
+   "amount": 0.06,
+   "until": 19.85
+  },
+  {
+   "t": 3.43,
+   "kind": "breathe",
+   "amount": 0.025,
+   "until": 5.22
+  }
+ ],
+ "caption_layouts": []
+}

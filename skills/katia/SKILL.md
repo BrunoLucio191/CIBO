@@ -27,6 +27,21 @@ from `podcast-reels` for this client — same engine, Katia-specific defaults be
   (`y = int(H*0.775) - total//2` in `cover.py`, vs `0.735` upstream) and has **no**
   blue accent bar above it — Katia's cover is just scrim + headline + optional logo.
   Don't reintroduce the bar; it was removed on purpose for this client.
+  **The 0.775 layout alone produced covers the user called "horríveis"**: in a tight
+  9:16 crop the face sits low and the headline landed on her mouth. For every cover,
+  frame a slightly wider still with the face in the upper third (face centre ≈ 30 %
+  of the height), keep the headline only on clothing or the dark scrim, and check
+  numerically that the headline top is below the chin with margin. Pick a frame with
+  eyes on camera and mouth closed or a light smile. Review all covers side by side.
+- **Captions never cover her face.** When the face sits low, move the band down with
+  `CAP_BAND_Y` (default 810) and confirm on the contact sheet, over the whole clip.
+- **Cuts without cover.** If the user asks for the cuts "sem capa", drop only the
+  cover frame (start the MP4 after the thumbnail frame, `-c copy` if the cut lands on a
+  keyframe, otherwise re-mux from the same render); don't re-render the whole clip
+  ("não era só cortar fora o frame da capa?").
+- **Cover photos for AI tools.** When asked for stills to feed an image AI, export ~20
+  varied, sharp, well-lit frames of her face into one folder, and write the prompts
+  naming Katia and referring to her photo.
 - **Framing:** static single-camera talking-head recordings, but don't guess one
   `cropx` for the whole batch — a single eyeballed value (e.g. `0.58`) drifted
   0.05–0.13 off-center across the 8 reference clips because framing shifts
@@ -47,6 +62,15 @@ from `podcast-reels` for this client — same engine, Katia-specific defaults be
   monologue several times until a take is approved (listen for restart cues like
   "volta", "de novo", "3, 2, 1" and an explicit "gostei"/approval after a clean take).
   Always cut from the last clean, approved take, never an earlier rehearsal.
+- **Re-readings for the team are tests, not takes.** After the blocks, she re-reads
+  some sentences to show the team which parts become Reels ("tem um corte que vai
+  fazer bem aqui", "aí tem a outra", "só o começo dos dois") — looking down, reading,
+  or turned to the side. Never use these in the long edit or in any Reel; they only
+  tell you *which* sentences to cut. Use the matching real take inside the block
+  (eyes on camera). One such test slipped into "Para compreender o transtorno
+  bipolar" and the long version.
+- **Long edit: remove every aside to the team** and check that the joins sound natural
+  (skill `limpeza-gravacao-bruta`), then run `fala-limpa` on every Reel.
 
 ## Workflow
 

@@ -44,6 +44,22 @@ picos vizinhos é de apenas 3 quadros de propósito — com uma janela larga o
 detector fica cego justamente para o plano de meio segundo que ele existe para
 achar.
 
+## Frame solto: 1 a 4 quadros entre dois cortes
+
+O usuário pegou depois da entrega, mais de uma vez, um "flash" na troca de ângulo: um
+quadro de outra câmera, ou do plano novo ainda com o crop antigo, entre dois planos
+(Bombordo "O que é Bombordo e Boreste" no início e aos 22 s; Malu reel 01 aos 30 s).
+O agrupamento de 3 quadros do detector de planos funde esses dois cortes num só, então
+o plano curto não aparecia. `micro_inserts()` olha os picos antes do agrupamento e
+acusa erro `frame_solto` quando dois cortes estão a 1–4 quadros um do outro, ignorando
+o quadro de dissolve (a média dos vizinhos). Testado com flash de 1 e 3 quadros, com
+corte limpo e com dissolve.
+
+Correção: a causa comum é o degrau do crop cair um quadro depois do corte do master.
+Adiante o keyframe de `cropx_timeline` em 1 quadro e renderize de novo. Se não der, sobreponha o
+quadro vizinho correto só naquele quadro (`overlay=enable='between(n,N,N)'`), na mesma
+passada que sai do master.
+
 ## Cadência de frames: medida, não veredito
 
 O relatório traz `cadence.ratio`, a fração de quadros que carregam imagem nova.

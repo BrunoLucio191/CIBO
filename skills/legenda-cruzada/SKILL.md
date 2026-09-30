@@ -31,6 +31,10 @@ Não é erro o que o **falante** disse errado. Erros de português do entrevista
 6. **Corrija no JSON de legendas e re-renderize só os clipes afetados.** Depois confirme na imagem: extraia o frame no timecode do bloco corrigido e leia o texto na tela. Corrigir o JSON sem re-renderizar não muda o que foi entregue.
 7. **Publique o relatório** com similaridade por clipe, contagem de blocos, divergências e a decisão tomada em cada uma.
 
+## Frase que os dois modelos não ouvem
+
+Quando os dois modelos deixam de transcrever uma frase que está na legenda, não conclua que a música mascarou: confira primeiro **quem** fala (skill `fala-limpa`). No reel da Malu, "vai preparando o corpo" sumia do mix porque era uma pessoa ao fundo, 20 dB abaixo — e a correção certa era cortar, não levantar a voz com compressor.
+
 ## Critérios de bloqueio
 
 - Similaridade abaixo de 0,85 em um clipe: investigue o clipe inteiro antes de liberar — normalmente é dessincronia ou trecho de outra fala, não palavra isolada.

@@ -1,0 +1,86 @@
+{
+ "_nota": "Padrao da Malu. Medidas em px no quadro 4K (2160x3840), tempos em s. Sobrescreva por reel em job['kinetic'] ou em <work>/kinetic.json.",
+ "font": "Montserrat-Regular.ttf",
+ "font_highlight": "Montserrat-SemiBold.ttf",
+ "supersample": 1,
+ "size": {
+  "base": 112,
+  "highlight_scale": 1.3,
+  "highlight_min_scale": 1.15,
+  "lead_scale": 0.8,
+  "max_width": 1520,
+  "line_pitch": 1.2,
+  "highlight_lead_gap": 0.22
+ },
+ "color": {
+  "base": "#FFFBF3",
+  "active": "#E9C98F",
+  "highlight": "#E9C98F",
+  "shadow_alpha": 200,
+  "shadow_blur": 0.13,
+  "shadow_offset": 0.04,
+  "highlight_shadow_alpha": 190,
+  "halo_alpha": 110,
+  "halo_blur": 0.38
+ },
+ "position": {
+  "safe_x": [
+   320,
+   1840
+  ],
+  "safe_bottom": 500,
+  "chin_margin": 60,
+  "chin_margin_face": 0.05,
+  "split_cy": 1610,
+  "default_cy": 2300,
+  "layout_halo_alpha": 185
+ },
+ "timing": {
+  "lead": 0.05,
+  "enter": 0.26,
+  "exit": 0.16,
+  "color_fade": 0.1,
+  "hold_after": 0.35,
+  "min_block": 0.45
+ },
+ "motion": {
+  "ease": [
+   0.33,
+   0.0,
+   0.67,
+   1.0
+  ],
+  "slide_px": 56,
+  "blur_px": 16,
+  "enter_scale_from": 0.94,
+  "exit_scale_to": 0.97,
+  "exit_push_px": 30,
+  "idle_scale": 0.012,
+  "highlight_zoom_from": 1.06
+ },
+ "presets": {
+  "normal": [
+   "slide_blur",
+   "drop_blur",
+   "mask_reveal"
+  ],
+  "highlight": [
+   "soft_zoom",
+   "rise_blur"
+  ]
+ },
+ "segmentation": {
+  "max_words": 4,
+  "max_chars": 22,
+  "pause_break": 0.28,
+  "flash": 0.35
+ },
+ "proper": [
+  "Turi-Ita",
+  "Thomas",
+  "Zeo",
+  "ZeoBody",
+  "ZeoDent"
+ ],
+ "highlights": null
+}

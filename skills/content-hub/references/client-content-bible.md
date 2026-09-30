@@ -60,6 +60,10 @@ Cleo Abram, Codie Sanchez, Hayden Hillier-Smith, Jordan Orme, Johnny Harris, Raf
 | 2026-09-08 | convidado estrangeiro comete erros de português | a legenda reproduz a fala como dita; só se corrige erro de transcrição, nunca a gramática do convidado |
 | 2026-09-08 | movimento de câmera não desejado | enquadramento estático por bloco; mudança de perto/longe acontece no corte (`zoom_steps`), sem zoom animado |
 | 2026-09-08 | master abaixo de 1080p | cortar na resolução nativa e subir uma única vez no fim; nunca fazer upscale antes do crop |
+| 2026-09-01 | SEBRAE, Vilena: pediu para encerrar o vídeo 1 aos 45 s (errou a frase depois) e legenda na altura do peito para disfarçar o decote | pedido de convidado sobre a própria imagem vale só para ela e é registrado aqui; encerrar antes do erro de fala, nunca "consertar" com legenda |
+| 2026-09-01 | SEBRAE, Lula: fim cortou a fala, legenda sobre o rosto na tela dividida com stock, áudio metálico | fim com folga depois da última palavra; tela dividida só se a legenda couber fora do rosto; sem stock nos vídeos dele; áudio metálico = processamento demais (denoise/EQ), refazer mais leve |
+| 2026-09-01 | capas descentralizadas ou feias, duas rodadas reprovadas | depois da 2ª rodada reprovada, exportar 5 opções (A–E) para o usuário escolher no Finder em vez de tentar a 3ª sozinho |
+| 2026-09-02 | stock no topo "sem nada a ver" com a fala | B-roll que não passa no `semantic-broll-validator` sai; sem referência boa, a pessoa fica em tela cheia |
 
 ## Changelog
 

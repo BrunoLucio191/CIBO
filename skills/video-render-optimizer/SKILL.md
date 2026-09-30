@@ -51,6 +51,30 @@ Um arquivo de horas de duração não cabe no timeout de uma chamada de ferramen
 - O jeito certo: rode o comando de encode longo como o próprio comando rastreado em background (sem envolver com `nohup ... &` mais um wrapper por cima). Se precisar mesmo destacar (`&`), inicie em uma chamada e, **imediatamente depois, abra uma segunda chamada em background** que só espera o PID real terminar (`while ps -p $PID >/dev/null; do sleep 30; done`) — essa segunda chamada é a que deve ser tratada como sinal de conclusão.
 - Só reporte o job como concluído depois de validar o arquivo de saída com `ffprobe` (duração, decodificação integral) — um MP4 com `-movflags +faststart` fica com o átomo `moov` incompleto e falha ao abrir enquanto o encode ainda está em andamento; isso por si só já denuncia um "terminou" prematuro.
 
+### Encode em background no macOS: confira o %CPU logo no início
+
+No macOS, um `ffmpeg` lançado em background pelo harness herda QoS baixo e roda nos
+núcleos de eficiência. No M4 ele ficou em ~146 % de CPU (≈1,5 de 10 núcleos): um encode
+estimado em 1h10 virou projeção de 9 h. Logo depois de lançar, pegue o PID e rode
+`taskpolicy -B -p <pid>` (e `-t 0 -l 0` para as tiers de I/O). O mesmo processo foi para
+~589 %. Confira o `%CPU` no primeiro minuto de todo render longo, em vez de confiar na
+estimativa feita com um teste em primeiro plano.
+
+### Memória e disco deste Mac
+
+- O Mac do usuário tem 16 GB de RAM. Não dispare um `ffmpeg` por arquivo ao mesmo tempo
+  sobre footage 4K: ~21 decodes simultâneos esgotaram a RAM. No máximo 2–3 processos.
+  Para frames de análise, use `-ss` antes do `-i` e `hwaccel videotoolbox`, extraindo
+  quadros pontuais em vez de decodificar o arquivo inteiro com `fps`.
+- Se o usuário avisar que o DaVinci está exportando, rode com `nice -n 10`, um processo de
+  cada vez e com o modelo de transcrição menor.
+- O disco de sistema (228 GB) vive perto de 100 %: uma transcrição travou com 211 MB
+  livres. **Temporários grandes (WAV extraído, blocos, renders intermediários) vão para a
+  pasta do projeto no SSD** (`04_trabalho/` ou `tmp/`), não para `/private/tmp` nem para o
+  scratchpad do harness. Apague-os no fim.
+- Entrega vertical em Full HD (1080×1920) mesmo quando a fonte é 4K, salvo pedido
+  contrário: render em 4K foi lento demais e o usuário pediu Full HD.
+
 ## Integração
 
 - Para Reels 1080×1920/30, o padrão inicial é `target 8 Mb/s`, `maxrate 10 Mb/s`, AAC 192 kb/s. Ajuste conforme duração, movimento e limite do destino.

@@ -1,6 +1,6 @@
 ---
 name: client-router
-description: Identifique a que cliente pertence um trabalho de edição antes de aplicar qualquer skill de corte, e trate cada cliente como um fluxo, estilo e conjunto de assets isolado — nunca misture fonte, logo, trilha, SFX ou convenção de capa entre clientes. Use no início de todo job que envolva um cliente com skill própria (Bombordo e Boreste, Content Hub, Katia, Autismo Cast, Dr. Energia), ou sempre que não estiver claro de qual cliente é o material, antes de escolher a skill de corte.
+description: Identifique a que cliente pertence um trabalho de edição antes de aplicar qualquer skill de corte, e trate cada cliente como um fluxo, estilo e conjunto de assets isolado — nunca misture fonte, logo, trilha, SFX ou convenção de capa entre clientes. Use no início de todo job que envolva um cliente com skill própria (Bombordo e Boreste, Content Hub, Katia, Autismo Cast, Dr. Energia, Fernanda, Malu), ou sempre que não estiver claro de qual cliente é o material, antes de escolher a skill de corte.
 ---
 
 # Client Router
@@ -14,4 +14,5 @@ O CIBO edita para vários clientes, e cada um tem um fluxo de edição diferente
 3. **Delegue todo o trabalho à skill do cliente identificado.** Não copie fonte, logo, filmburn, SFX, `client-content-bible.md` ou convenção de capa de um cliente para o job de outro, mesmo que os arquivos estejam acessíveis no mesmo volume ou pasta compartilhada.
 4. **Se o material não pertencer a nenhum cliente com skill própria:** use `podcast-reels` como fallback genérico, ou pare e pergunte ao usuário se deve nascer uma skill nova para esse cliente. Nunca force os assets/identidade de um cliente existente num material que não é dele.
 5. **Ao nascer um cliente novo**, crie a skill seguindo a estrutura das demais (`SKILL.md`, `scripts/`, `references/client-content-bible.md`, `references/asset-source-catalog.md`, `assets/` com fonte/logo/SFX próprios) e adicione uma linha em `references/client-registry.md`. Use `video-project-structure` para auditar a organização de pastas do projeto desse cliente.
-6. **Antes de entregar**, confirme que nome de pasta, capa, fonte, música e legendas não vazaram identidade de outro cliente — isso vale mesmo dentro de um único job com múltiplos convidados ou formatos.
+6. **Regras transversais (valem para todo cliente): leia `references/regras-transversais.md`.** Em resumo: procure a skill e o asset antes de fazer; `fala-limpa` em todo corte de fala; legenda fiel à fala e abaixo do queixo; um crop por plano de câmera; todo corte com trilha; nomes `NN - HEADLINE` e `CAPA - …`; uma versão por vídeo; transcrição sempre com tempo; não dizer que está bom sem olhar; abrir a pasta no fim; correção do usuário vira atualização da skill (e do CIBO) no mesmo turno.
+7. **Antes de entregar**, confirme que nome de pasta, capa, fonte, música e legendas não vazaram identidade de outro cliente — isso vale mesmo dentro de um único job com múltiplos convidados ou formatos.

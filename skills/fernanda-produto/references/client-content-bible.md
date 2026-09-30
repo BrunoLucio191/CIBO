@@ -21,6 +21,8 @@
 12. "Ela fala adsorve, não absorve."
 13. "A imagem do manequim quando ela fala de pineal não tem nada a ver" e "remova esse vídeo [cérebro] e adicione o zoom in do mesmo jeito".
 
+14. Cortes da Malu têm bíblia própria (skill `malu-cortes`). Regra que vale para todos os clientes: só a voz de quem fala, sem hesitação, sem palavra final cortada (skill `fala-limpa`).
+
 ## Tom e escolha de referências
 - Saúde integrativa, didático, vendedor. As referências explicam o mecanismo (intestino, microbioma, pasta de dente comum, exame de tireoide, sono) e não decoram.
 - Evite imagem de laboratório genérica, manequim, cristal "parecido com zeólita" ou qualquer coisa que só compartilhe a palavra-chave.

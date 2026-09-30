@@ -1,14 +1,59 @@
 {
   "bombordo-boreste": {
-    "aliases": ["bombordo", "boreste", "bombordo e boreste", "bombordo-boreste", "portos"]
+    "aliases": [
+      "bombordo",
+      "boreste",
+      "bombordo e boreste",
+      "bombordo-boreste",
+      "portos"
+    ]
   },
   "content-hub": {
-    "aliases": ["content hub", "content-hub", "contenthub", "sebrae"]
+    "aliases": [
+      "content hub",
+      "content-hub",
+      "contenthub",
+      "sebrae",
+      "thomas",
+      "vai lá e faz",
+      "vilena"
+    ]
   },
   "katia": {
-    "aliases": ["katia", "kátia"]
+    "aliases": [
+      "katia",
+      "kátia"
+    ]
   },
   "autismo-cast": {
-    "aliases": ["autismo cast", "autismo-cast", "autismocast"]
+    "aliases": [
+      "autismo cast",
+      "autismo-cast",
+      "autismocast"
+    ]
+  },
+  "dr-energia": {
+    "aliases": [
+      "dr energia",
+      "dr. energia",
+      "drenergia",
+      "dr-energia",
+      "energia br cast"
+    ]
+  },
+  "fernanda-produto": {
+    "aliases": [
+      "fernanda",
+      "zeobody",
+      "zeodent",
+      "zeo"
+    ]
+  },
+  "malu-cortes": {
+    "aliases": [
+      "malu",
+      "turi-ita",
+      "turi ita"
+    ]
   }
 }

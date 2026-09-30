@@ -73,9 +73,13 @@ def build(job):
         *[f"Instagram {HOST_INSTAGRAM.get(h, f'[LINK DO INSTAGRAM DE {h.upper()}]')}" for h in hosts],
         *([f"Instagram {job['instagram_convidado']}"] if job.get("instagram_convidado") else []),
         "",
-        f"**Gravação:** {job.get('gravacao') or '[LINK DA GRAVAÇÃO]'}",
-        f"**Subir aqui:** {job.get('subir_aqui') or '[LINK DA PASTA PARA UPLOAD DA THUMB]'}",
+        # link não informado sai da demanda (o usuário pediu para tirar o "[LINK DA GRAVAÇÃO]" vazio)
+        *([f"**Gravação:** {job['gravacao']}"] if job.get("gravacao") else []),
+        *([f"**Subir aqui:** {job['subir_aqui']}"] if job.get("subir_aqui") else []),
     ]
+    faltando = [k for k in ("instagram_convidado", "gravacao", "subir_aqui") if not job.get(k)]
+    if faltando:
+        print("AVISO: sem " + ", ".join(faltando) + " — essas linhas ficaram fora da demanda.", file=sys.stderr)
     ms, dt = due_ms(job.get("prazo"))
     body = {
         "name": name,

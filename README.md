@@ -24,7 +24,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 ### Roteamento de cliente
 | Skill | O que faz |
 |---|---|
-| `client-router` | Identifica a que cliente pertence um job antes de qualquer corte, e garante que fonte, logo, trilha, SFX e capa nunca vazem entre clientes — mesmo quando compartilham o mesmo motor de render. |
+| `client-router` | Identifica a que cliente pertence um job antes de qualquer corte, e garante que fonte, logo, trilha, SFX e capa nunca vazem entre clientes — mesmo quando compartilham o mesmo motor de render. Guarda também as regras que valem para todo cliente (`references/regras-transversais.md`). |
 
 ### Cortes por cliente (vertical 9:16)
 | Skill | O que faz |
@@ -35,6 +35,7 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | `autismo-cast` | Cortes verticais do Autismo Cast, com estilo e assets próprios do cliente. |
 | `dr-energia` | Cortes verticais do Dr. Energia BR Cast: burn-in verde na entrada e saída, proporção de 4 cortes do apresentador para 2 do convidado, entrega a 24 fps. |
 | `fernanda-produto` | Vídeos de produto da Fernanda (linha Zeo): Sony S-Log3 deitada → vertical colorizado, corte de bastidores e gaguejadas de silêncio a silêncio, zoom suave, referências Pexels em tela dividida, burn azul, SFX só nas transições e música em faixa separada. |
+| `malu-cortes` | Cortes da Malu (entrevista linha Zeo/Turi-Ita) no padrão de Reel premium: mapa de edição, fala limpa, rastreamento de rosto, kit de motion, legenda Montserrat fina animada palavra por palavra e pente-fino antes do render. Usa o motor da `fernanda-produto`. |
 | `podcast-reels` | Fluxo genérico de podcast → Reels: legendas Cal Sans, SFX de câmera, abertura com zoom-out e blur, capa com manchete. |
 
 ### Formato e transformação
@@ -42,12 +43,14 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 |---|---|
 | `depoimento-vertical-blur` | Transforma depoimento/talking head horizontal em vertical nítido com blur só nas faixas superior/inferior. |
 | `cortes-youtube-verificados` | Baixa e recorta trechos do YouTube (yt-dlp + FFmpeg) validando minutagem e integridade contra a fonte. |
+| `lettering-motion` | Módulo de easing compartilhado e entrada por slide + fade para legendas, letterings e cards; árvore de decisão entre Pillow, SVG e Remotion. |
 
 ### Qualidade e QA
 | Skill | O que faz |
 |---|---|
 | `caption-quality-gate` | Pente-fino obrigatório de legendas: fidelidade à fala, timing, quebras, ênfases, legibilidade no render. |
 | `legenda-cruzada` | Confere a legenda queimada retranscrevendo o áudio final com um modelo mais forte (large-v3) e comparando palavra a palavra. |
+| `fala-limpa` | Audita a fala antes do render e no QA: corta outra voz (entrevistador, alguém ao fundo), hesitações e pausas de pensamento, e impede a palavra final engolida pelo fade. |
 | `video-delivery-safety-check` | Checking final antes da entrega: confronta o MP4 com o job esperado, falhas técnicas/visuais/sonoras. |
 | `semantic-broll-validator` | Valida se um B-roll casa com o sentido completo da fala, não só com uma palavra-chave isolada. |
 
@@ -58,6 +61,10 @@ Cada skill é autocontida: lê seu próprio `SKILL.md` antes de qualquer coisa, 
 | `video-render-optimizer` | Detecta CPU/GPU/encoders FFmpeg disponíveis e escolhe o mais eficiente sem perder qualidade perceptível. |
 | `talking-head-music` | Escolhe, compara e mixa trilha de fundo para vídeos de talking head sem atropelar a inteligibilidade da fala. |
 | `clickup-thumb-podcast` | Cria a demanda de thumb de episódio de podcast no ClickUp (ContentHub > Max > Edição) no padrão da equipe; o token fica fora do repositório. |
+| `limpeza-gravacao-bruta` | Tira bastidores, pausas, retakes, bip e assuntos que a equipe pediu para cortar de gravações longas, com emendas pelo sinal de áudio e trava de duração do áudio. |
+| `transcricao-aulas` | Transcrição em lote de aulas e cursos (série, retomável, pouca RAM), sempre com tempo, intervalos para o DaVinci, sumário e estrutura pronta para o Drive. |
+| `seo-youtube-podcast` | Título, descrição com capítulos e tags (contagem de 500 do YouTube) no modelo de cada podcast, casados com a thumb; regras da thumb do Pod Acontecer e download de thumbs do canal. |
+| `foto-evento-cor` | Correção e nivelamento de cor de séries de fotos com padrão medido (neutro, linha de pele ~123°, pretos e brancos), com tabela antes/depois. |
 
 ## Setup
 

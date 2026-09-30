@@ -19,12 +19,21 @@ def run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, text=True, capture_output=True, check=check)
 
 
+def _norm_cap(cap: dict) -> dict:
+    """Aceita {t,s,e} (motor de cortes) e {text,start,end} (fernanda-produto); "\n" = quebra manual de linha."""
+    if "t" not in cap and "text" in cap:
+        cap = {**cap, "t": cap["text"], "s": cap.get("start"), "e": cap.get("end")}
+    if isinstance(cap.get("t"), str) and "\n" in cap["t"]:
+        cap = {**cap, "lines": cap["t"].split("\n"), "t": " ".join(x.strip() for x in cap["t"].split("\n"))}
+    return cap
+
+
 def load_caps(path: Path) -> list[dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if isinstance(data, list):
-        return data
     if isinstance(data, dict) and isinstance(data.get("caps"), list):
-        return data["caps"]
+        data = data["caps"]
+    if isinstance(data, list):
+        return [_norm_cap(c) for c in data]
     raise ValueError("captions JSON must be a list or contain a 'caps' list")
 
 

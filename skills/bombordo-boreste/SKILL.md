@@ -17,6 +17,36 @@ Builds finished vertical cuts from a master video + SRT. Everything is driven by
 silence-snapped trimming, caption rendering, audio sweetening and the cover.
 
 
+## Regras do cliente (correções do usuário e do Daniel)
+
+- **Punchline no início.** O Daniel (host) pediu: "seria legal já colocar a punch line no
+  início do corte". O corte abre com a frase mais forte (gancho nos 3 primeiros segundos),
+  mesmo que ela venha do meio do trecho. Pode ser um *cold open* de 1 frase antes do
+  contexto, desde que a frase volte inteira e sem corte seco no meio de palavra.
+- **5 cortes por episódio, sem repetir fala.** Todo episódio fecha com 5 cortes no total:
+  conte o que já existe e complete. Nenhuma fala pode aparecer em dois cortes. Antes de
+  escolher, levante as janelas já usadas (`master_in` + cada `keeps` de cada `job.json`,
+  mais os cortes que vieram prontos do Drive) e descarte candidatos que se sobreponham.
+- **Numeração dos episódios.** A pasta local `epN` é o "EP N-1" no YouTube (o episódio do
+  Silvio Lúcio é o EP 0 no canal). Identifique o episódio pelos convidados ou pela duração,
+  nunca só pelo número.
+- **Grafia:** "Bombordo e Boreste", com "Bombordo" sempre junto. O Whisper escreve
+  "Bom Bordo" ou parte a palavra entre duas cues: as regras de `fix` do `job.json` cobrem
+  os dois casos. Copie-as para cada episódio novo e confira nas transcrições entregues.
+- **Sempre partir do master** em `content/bombordo/CORTES/Cortes epN/` ou `epN/sources/`,
+  nunca de um MP4 solto em `~/Movies` (pode ser versão substituída, com a grafia errada).
+- **Capa:** a pessoa de frente, olhos abertos e sorriso real (`cover_pick.py --master`).
+  A convidada precisa ficar bonita: pode vir de qualquer momento do episódio (`cover_from`).
+- **Música a −27 dB** (`mix.music_db`), não −21: "a música tá um pouco muito alta".
+- **Entrega:** uma pasta `CORTES/Cortes epN/` por episódio, sem níveis numerados. Arquivos
+  `NN - HEADLINE.mp4`, com acentos, numerados pela ordem em que a fala aparece no
+  episódio (ordenar por `master_in`), e a capa `CAPA - NN - HEADLINE.png` (prefixo, para as
+  capas ficarem agrupadas no Finder). Grave o nome em `filename` no `job.json`, senão o
+  próximo render volta ao nome antigo. Troque `"` por `'` no nome do arquivo.
+- **Transcrição sempre com tempo** (`[hh:mm:ss - hh:mm:ss] texto`, blocos de ~20 s, mais
+  o SRT). Texto corrido sem tempo o usuário considera inútil. Entregue a de todos os
+  episódios do lote.
+
 ## Reenquadramento: um recorte por plano de camera
 
 `face_crop.py` decide **um recorte por plano de camera**, nunca por trecho
@@ -396,7 +426,8 @@ for comparable quality, so keep `libx264` as the default for compact final maste
 
 ## Music
 
-Use a licensed/approved track and mix it *under* the voice. Start around −21 dB and
+Use a licensed/approved track and mix it *under* the voice. Start at **−27 dB** (the user
+rejected −21 as "muito alta") and
 use `sidechaincompress` keyed off the dialogue; validate by listening because masters
 and musical arrangements vary. Preserve the chosen mix in `job.mix` so cache
 fingerprints invalidate correctly when gain or ducking changes. A clip-level `mix`

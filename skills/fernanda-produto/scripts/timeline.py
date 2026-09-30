@@ -19,7 +19,8 @@ def segments(job):
 
 
 def duration(job):
-    return round(sum(b - a for a, b in segments(job)), 3)
+    # tail_hold: segundos de imagem (audio mudo) depois da ultima fala, para o fade final nao engolir a palavra
+    return round(sum(b - a for a, b in segments(job)) + job.get("tail_hold", 0), 3)
 
 
 def o(job, t):
@@ -36,9 +37,11 @@ def o(job, t):
 
 def cut_points(job):
     """Instantes (tempo editado) em que ha emenda de corte, para o zoom seco que esconde o jump cut."""
+    # punch_min: so cortes que removem pelo menos isso (s) ganham zoom seco; aparo de pausa curta fica corte seco
     pts, acc = [], 0.0
     segs = segments(job)
-    for a, b in segs[:-1]:
+    for (a, b), (na, _) in zip(segs[:-1], segs[1:]):
         acc += b - a
-        pts.append(round(acc, 3))
+        if na - b >= job.get("punch_min", 0):
+            pts.append(round(acc, 3))
     return pts
