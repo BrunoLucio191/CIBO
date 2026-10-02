@@ -15,8 +15,11 @@ MODEL = os.environ.get('KIN_ASR_MODEL', 'mlx-community/whisper-large-v3-mlx')
 
 def voice_wav(work, clip):
     out = os.path.join(kdir(work), f'voice_{clip}.wav')
-    if not os.path.exists(out):
-        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', os.path.join(work, f'A_{clip}.mp4'),
+    src = os.path.join(work, f'A_{clip}.mp4')
+    # re-extract whenever the cut changed: a stale voice_<clip>.wav from an older keeps
+    # left half the words without audio timing (ep04: 46/93 after re-cutting corte01)
+    if not os.path.exists(out) or os.path.getmtime(src) > os.path.getmtime(out):
+        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', src,
                         '-vn', '-ac', '1', '-ar', '16000', out], check=True)
     return out
 
