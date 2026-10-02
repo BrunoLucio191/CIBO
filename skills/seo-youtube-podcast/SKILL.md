@@ -22,7 +22,7 @@ com a thumb**. Nunca invente um formato novo.
    demanda do designer sai pela skill `clickup-thumb-podcast` com o mesmo título).
 4. **Confira nomes e grafias** (convidado, cargo, partido, empresa, cidade) na fala e na web.
    Quando o episódio traz duas grafias, use a oficial e ponha as variantes nas tags. Confira o
-   número do episódio: no Bombordo a pasta `epN` é o "EP N-1" no YouTube; no Pod Acontecer,
+   número do episódio: no Bombordo, desde 30/09/2026, a pasta `epN` é o EP N do YouTube (arquivos antigos usam epN = EP N-1); no Pod Acontecer,
    pergunte se houver dúvida ("o último foi o 19, esse é o 20").
 5. **Escreva só o que está no corte final.** Não prometa no título algo que não aparece; se um
    trecho foi cortado a pedido (ex.: um assunto que a equipe pediu para tirar), ele não entra.
@@ -32,6 +32,12 @@ com a thumb**. Nunca invente um formato novo.
    o usuário pedir "500 caracteres de tags", preencha até 480–500 pela contagem do YouTube.
 7. **Salve em TXT** na pasta do episódio (`SEO EP NN.txt`) com as seções `TÍTULO DA THUMB`,
    `TÍTULO DO VÍDEO`, `DESCRIÇÃO`, `TAGS DO YOUTUBE`, e mostre no chat para copiar.
+
+## Teste A/B de título e thumb
+
+O YouTube ("Testar e comparar") varia **só título e thumb**. Descrição e tags são **uma só**.
+Quando houver duas opções de thumb, entregue dois pares título+thumb e **uma** descrição
+que sirva para os dois ganchos, mais **um** conjunto de tags. Nunca dois pacotes de descrição/tags.
 
 ## Thumb do episódio
 
