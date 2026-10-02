@@ -23,6 +23,8 @@ ap.add_argument("cortes")
 ap.add_argument("saida")
 ap.add_argument("--bitrate", default="8M")
 ap.add_argument("--so-plano", action="store_true", help="só imprime as emendas, sem renderizar")
+ap.add_argument("--fade-in", type=float, default=0.0, help="fade do preto + áudio no começo do episódio (s)")
+ap.add_argument("--fade-out", type=float, default=0.0, help="fade para o preto + áudio no fim do episódio (s)")
 a = ap.parse_args()
 
 cortes = sorted(json.load(open(a.cortes)), key=lambda c: c[0])
@@ -54,7 +56,16 @@ for i, (x, y) in enumerate(keep):
     f.append(f"[0:a]atrim={x:.3f}:{y:.3f},asetpts=PTS-STARTPTS,"
              f"afade=t=in:d=0.015,afade=t=out:st={max(0, d - 0.02):.3f}:d=0.02[a{i}]")
     c += f"[v{i}][a{i}]"
-f.append(c + f"concat=n={len(keep)}:v=1:a=1[v][a]")
+# fade-in/fade-out pedidos para o episódio inteiro (Bombordo EP 04): só nas pontas, nunca nas emendas
+vf, af = [], []
+if a.fade_in > 0:
+    vf.append(f"fade=t=in:st=0:d={a.fade_in:.3f}"); af.append(f"afade=t=in:st=0:d={a.fade_in:.3f}")
+if a.fade_out > 0:
+    st = max(0.0, total - a.fade_out)
+    vf.append(f"fade=t=out:st={st:.3f}:d={a.fade_out:.3f}"); af.append(f"afade=t=out:st={st:.3f}:d={a.fade_out:.3f}")
+f.append(c + f"concat=n={len(keep)}:v=1:a=1[vc][ac]")
+f.append(f"[vc]{','.join(vf) or 'null'}[v]")
+f.append(f"[ac]{','.join(af) or 'anull'}[a]")
 fc = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False)
 fc.write(";".join(f))
 fc.close()
@@ -94,7 +105,8 @@ if abs(d.get("audio", 0) - total) > 0.3:
     open(lista, "w").write("".join(f"file '{p}'\n" for p in partes))
     fixo = tmp + ".fix.mp4"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", tmp, "-f", "concat", "-safe", "0", "-i", lista,
-                    "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                    "-map", "0:v", "-map", "1:a", "-c:v", "copy", *(["-af", ",".join(af)] if af else []),
+                    "-c:a", "aac", "-b:a", "192k",
                     "-movflags", "+faststart", fixo], check=True)
     for p in partes + [wav, lista]:
         os.remove(p)
