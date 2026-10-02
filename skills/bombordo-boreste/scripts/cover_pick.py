@@ -86,7 +86,7 @@ def scan_master(master, fps=3, top=48):
             m = hsv[y + int(h * .66):y + int(h * .86), x + int(w * .3):x + int(w * .7)]
             teeth = float(((m[..., 2] > 170) & (m[..., 1] < 70)).mean()) if m.size else 0
             sharp = float(cv2.Laplacian(roi, cv2.CV_64F).var())
-            rows.append(dict(t=t, cx=(x + w / 2) * 2, fy=y * 2, s=max(s[2] for s in st) / w + 3 * teeth + min(sharp, 300) / 600))
+            rows.append(dict(t=t, cx=float((x + w / 2) * 2), fy=int(y * 2), s=float(max(s[2] for s in st) / w + 3 * teeth + min(sharp, 300) / 600)))
     rows.sort(key=lambda r: -r['s']); pick = []
     for r0 in rows:
         if all(abs(r0['t'] - p['t']) >= 1.2 for p in pick): pick.append(r0)

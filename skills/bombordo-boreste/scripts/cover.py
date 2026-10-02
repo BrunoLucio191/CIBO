@@ -57,14 +57,18 @@ def build(c,src,out):
     ft,s=fit(c['headline'],W-150,110)
     lh=int(s*1.16); total=lh*len(lines)
     y=int(H*0.735)-total//2
+    # every line sits on the same baseline pitch: offset by the CAP height of the font,
+    # never by the line's own bbox -- an accented capital (ATE/NAO) used to push its
+    # line down and the headline read as unevenly spaced (ep04 covers)
+    top=ft.getbbox('H')[1]
     for i,l in enumerate(lines):
         bb=ft.getbbox(l); w=bb[2]-bb[0]; x=(W-w)//2-bb[0]
         yy=y+i*lh
         sh=Image.new('RGBA',(W,lh+60),(0,0,0,0))
-        ImageDraw.Draw(sh).text((x,10-bb[1]),l,font=ft,fill=(0,0,0,200))
+        ImageDraw.Draw(sh).text((x,10-top),l,font=ft,fill=(0,0,0,200))
         sh=sh.filter(ImageFilter.GaussianBlur(14))
         im.paste(Image.alpha_composite(im.crop((0,yy-10,W,yy+lh+50)).convert('RGBA'),sh).convert('RGB'),(0,yy-10))
-        d.text((x,yy-bb[1]),l,font=ft,fill=(255,255,255))
+        d.text((x,yy-top),l,font=ft,fill=(255,255,255))
     # blue accent bar
     bw=int(W*0.16)
     d.rounded_rectangle([(W-bw)//2,y-58,(W+bw)//2,y-46],6,fill=BLUE)

@@ -125,10 +125,12 @@ def build(job, work, clip, cfg):
     if curated:                                   # chosen by meaning (kinetic.yaml videos.<clip>.highlights)
         pos = 0; nw = [norm(w['w']) for w in words]
         for ph in curated:
-            toks = [norm(x) for x in ph.split() if norm(x)]
+            toks = [norm(x) for x in str(ph).split() if norm(x)]   # YAML reads a bare 80 as int
             for i in range(pos, len(nw) - len(toks) + 1):
                 if nw[i:i + len(toks)] == toks:
-                    units.append((i, i + len(toks) - 1)); pos = i + len(toks); break
+                    j = i + len(toks) - 1
+                    if is_num(words[j]['w']) and j + 1 < len(words) and words[j + 1]['w'].strip() == '%': j += 1
+                    units.append((i, j)); pos = j + 1; break
             else:
                 print(f'   aviso: destaque "{ph}" não encontrado em ordem no texto', flush=True)
     else:
@@ -141,7 +143,8 @@ def build(job, work, clip, cfg):
             chosen[bi] = wi; used.add(norm(words[wi]['w']))
         for wi in sorted(chosen.values()):
             j = wi
-            if is_num(words[wi]['w']) and wi + 1 < len(words) and norm(words[wi + 1]['w']) in UNITS: j = wi + 1
+            if is_num(words[wi]['w']) and wi + 1 < len(words) and (norm(words[wi + 1]['w']) in UNITS
+                                                                  or words[wi + 1]['w'].strip() == '%'): j = wi + 1   # "100 %" stays one unit
             if (is_num(words[wi]['w']) and wi + 2 < len(words) and low(words[wi + 1]['w']) == 'de'
                     and norm(words[wi + 2]['w']) in MONTHS): j = wi + 2          # "7 de setembro"
             units.append((wi, j))
@@ -170,8 +173,14 @@ def build(job, work, clip, cfg):
             if span < 0.35:
                 if nxt['kind'] == 'normal' and len(b['idx']) + len(nxt['idx']) <= cfg['segmentation']['max_words'] + 1:
                     nxt['idx'] = b['idx'] + nxt['idx']; continue
-                if nxt['kind'] == 'highlight' and len(nxt.get('small', [])) + len(b['idx']) <= 2:
+                # only an article/preposition may ride small above a destaque; a word that ends a
+                # sentence ("o que isso quer dizer?" + "Poucas empresas") goes back to its own phrase
+                ends = words[b['idx'][-1]]['w'].rstrip().endswith(('.', '?', '!'))
+                if (nxt['kind'] == 'highlight' and len(nxt.get('small', [])) + len(b['idx']) <= 2
+                        and not ends and all(is_func(words[i]['w']) for i in b['idx'])):
                     nxt['idx'] = b['idx'] + nxt['idx']; nxt['small'] = b['idx'] + nxt.get('small', []); continue
+                if merged and merged[-1]['kind'] == 'normal':
+                    merged[-1]['idx'] += b['idx']; continue
         merged.append(b)
     final = merged
     # presets: slide_blur anchors the style; drop_blur opens a new sentence after a pause,
@@ -180,6 +189,9 @@ def build(job, work, clip, cfg):
     for n, b in enumerate(final):
         ws = [dict(w=words[i]['d'], raw=words[i]['w'], s=words[i]['s'], e=words[i]['e'], small=(i in b.get('small', [])),
                    hl=(b['kind'] == 'highlight' and i not in b.get('small', []))) for i in b['idx']]
+        for k in range(len(ws) - 1, 0, -1):          # "100 %" -> "100%" (Whisper splits the sign off)
+            if ws[k]['w'].strip() == '%' and is_num(ws[k - 1]['w']):
+                ws[k - 1]['w'] += '%'; ws[k - 1]['raw'] += '%'; ws[k - 1]['e'] = ws[k]['e']; del ws[k]
         if b['kind'] == 'highlight':
             preset = hl_presets[hcount % len(hl_presets)]; hcount += 1
         else:
