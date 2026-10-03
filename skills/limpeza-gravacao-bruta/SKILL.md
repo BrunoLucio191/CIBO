@@ -65,7 +65,7 @@ Leia o perfil de cada borda (`V` = voz, `b` = som sem voz, `.` = silêncio) e de
 
 ```bash
 python3 scripts/renderizar_cortes.py BRUTO.mp4 cortes.json "BRUTO (sem bastidores).mp4" --so-plano   # posições das emendas
-python3 scripts/renderizar_cortes.py BRUTO.mp4 cortes.json "BRUTO (sem bastidores).mp4"
+python3 scripts/renderizar_cortes.py BRUTO.mp4 cortes.json "BRUTO (sem bastidores).mp4" [--punch punch.json]
 $PY scripts/conferir_emendas.py "BRUTO (sem bastidores).mp4" BRUTO.mp4 cortes.json
 ```
 
@@ -75,6 +75,8 @@ $PY scripts/conferir_emendas.py "BRUTO (sem bastidores).mp4" BRUTO.mp4 cortes.js
 - **Rode o render em background** quando o usuário puder mandar mensagens durante ele, e avise que está renderizando ("tá editando mesmo?" é sinal de que você ficou em silêncio tempo demais).
 - **Duração das duas trilhas.** Num episódio de ~1 h (Autismo Cast), vários `atrim` da mesma entrada num grafo geraram 59:56 de vídeo e só 4:17 de áudio, com exit 0 e decodificação limpa. O script agora confere vídeo e áudio contra o total esperado e, se o áudio encurtar, refaz só o áudio a partir de um WAV e remuxa o vídeo com `-c:v copy` (1 min em vez de 35 min de re-encode).
 - **Ponto de emenda por palavra, nunca por segmento.** Uma contagem "um, dois, três, vai" estava escondida dentro de um segmento do Whisper que começava em 15,7 s. Use `--word-timestamps` numa janela curta em volta de cada IN/OUT.
+- **Emenda no mesmo plano vira jump cut.** Em master multicâmera já cortado (Katia, 14/09), compare o quadro antes e depois de cada emenda. Se o plano for o mesmo, use `--punch punch.json` (`[[ini, fim, zoom, cx, cy], ...]` em segundos do original): o trecho depois da emenda entra com zoom de 1,15–1,2× no rosto (1,3× num plano aberto) **até a próxima troca de câmera** do master, que você acha com `select='gt(scene,0.25)'`. Não deixe trecho menor que ~1,5 s entre duas emendas no mesmo plano, porque o punch pisca. Nesse caso, desista de uma das emendas.
+- **Meça o true peak do original antes de entregar.** O bruto da Katia vinha a −12 LUFS, limitado no teto, e o AAC decodificava a +3,8 dBFS. O `verify_video.py` barrou. A correção foi ganho fixo de −3 dB mais `aresample=192000,alimiter=limit=-1.5dB:level=false,aresample=48000`, refazendo só o áudio com `-c:v copy` (~1 min). O resultado foi −15,2 LUFS e −1,2 dBTP. Nunca use `loudnorm`.
 - **Confira no arquivo final**, não no plano. Em cada emenda, o texto precisa fechar e abrir limpo, e a voz precisa aparecer em ≤ 0,1 s depois dela.
 - Detalhes do FFmpeg 7+/8: use `-/filter_complex ARQUIVO`, porque `-filter_complex_script` foi removido. No zsh, `set -- $var` não separa palavras. Use Python para montar listas.
 
@@ -83,6 +85,7 @@ $PY scripts/conferir_emendas.py "BRUTO (sem bastidores).mp4" BRUTO.mp4 cortes.js
 - Mantenha o original intocado. A saída vai para `NOME (sem bastidores).mp4`, na mesma pasta, e sempre fica só a última versão boa.
 - Informe a duração antes e depois, uma tabela com **cada emenda no tempo do vídeo final** e o que ficou dos dois lados, e as decisões editoriais que o usuário deve checar (retake escolhido, assunto mantido ou tirado).
 - Seja honesto sobre o que não foi verificado. Bastidor sem palavra-chave no meio do conteúdo pode ter passado, e o salto de enquadramento nas emendas secas precisa ser visto na imagem.
+- **"Corte" para o usuário quer dizer Reel.** Quando ele pede "edição limpa" de um podcast longo, fale em "emendas" ou "trechos removidos", nunca em "cortes": "eu n quero corte, é um podcast limpo" (Katia).
 - Toda correção nova do usuário sobre emenda ou editorial vira uma regra nesta skill.
 
 ## Configuração de render no DaVinci (pergunta recorrente)

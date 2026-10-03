@@ -25,6 +25,8 @@ ap.add_argument("--bitrate", default="8M")
 ap.add_argument("--so-plano", action="store_true", help="só imprime as emendas, sem renderizar")
 ap.add_argument("--fade-in", type=float, default=0.0, help="fade do preto + áudio no começo do episódio (s)")
 ap.add_argument("--fade-out", type=float, default=0.0, help="fade para o preto + áudio no fim do episódio (s)")
+ap.add_argument("--punch", help="JSON [[ini, fim, zoom, cx, cy], ...] em segundos do ORIGINAL: zoom (punch-in) "
+                "para disfarçar emenda no mesmo plano; cx/cy = centro do zoom (0–1)")
 a = ap.parse_args()
 
 cortes = sorted(json.load(open(a.cortes)), key=lambda c: c[0])
@@ -49,13 +51,40 @@ print(f"duração final: {int(total // 60)}min{total % 60:02.0f}s")
 if a.so_plano:
     sys.exit()
 
-f, c = [], ""
+# Punch-in (Katia, podcast multicâmera 14/09): emenda que não cai numa troca de câmera vira jump cut no mesmo
+# plano. O trecho depois dela entra com zoom até a próxima troca de câmera, e a emenda passa por troca de plano.
+punch = json.load(open(a.punch)) if a.punch else []
+W0, H0 = (int(v) for v in subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries",
+          "stream=width,height", "-of", "csv=p=0", a.original], capture_output=True, text=True).stdout.split(",")[:2])
+
+
+def pedacos(x, y):
+    """Divide [x, y] nas bordas dos punch-ins: [(ini, fim, punch|None)]."""
+    bordas = sorted({x, y, *(t for p in punch for t in p[:2] if x < t < y)})
+    out = []
+    for u, v in zip(bordas, bordas[1:]):
+        p = next((p for p in punch if p[0] <= u and v <= p[1]), None)
+        out.append((u, v, p))
+    return out
+
+
+f, cv, ca, nv = [], "", "", 0
 for i, (x, y) in enumerate(keep):
     d = y - x
-    f.append(f"[0:v]trim={x:.3f}:{y:.3f},setpts=PTS-STARTPTS[v{i}]")
+    for u, v, p in pedacos(x, y):
+        z = ""
+        if p:
+            zoom, cx, cy = p[2:5]
+            cw, ch = round(W0 / zoom / 2) * 2, round(H0 / zoom / 2) * 2
+            ox = min(max(0, round(cx * W0 - cw / 2)), W0 - cw)
+            oy = min(max(0, round(cy * H0 - ch / 2)), H0 - ch)
+            z = f",crop={cw}:{ch}:{ox}:{oy},scale={W0}:{H0}:flags=lanczos,setsar=1"
+        f.append(f"[0:v]trim={u:.3f}:{v:.3f},setpts=PTS-STARTPTS{z}[v{nv}]")
+        cv += f"[v{nv}]"
+        nv += 1
     f.append(f"[0:a]atrim={x:.3f}:{y:.3f},asetpts=PTS-STARTPTS,"
              f"afade=t=in:d=0.015,afade=t=out:st={max(0, d - 0.02):.3f}:d=0.02[a{i}]")
-    c += f"[v{i}][a{i}]"
+    ca += f"[a{i}]"
 # fade-in/fade-out pedidos para o episódio inteiro (Bombordo EP 04): só nas pontas, nunca nas emendas
 vf, af = [], []
 if a.fade_in > 0:
@@ -63,7 +92,8 @@ if a.fade_in > 0:
 if a.fade_out > 0:
     st = max(0.0, total - a.fade_out)
     vf.append(f"fade=t=out:st={st:.3f}:d={a.fade_out:.3f}"); af.append(f"afade=t=out:st={st:.3f}:d={a.fade_out:.3f}")
-f.append(c + f"concat=n={len(keep)}:v=1:a=1[vc][ac]")
+f.append(cv + f"concat=n={nv}:v=1:a=0[vc]")
+f.append(ca + f"concat=n={len(keep)}:v=0:a=1[ac]")
 f.append(f"[vc]{','.join(vf) or 'null'}[v]")
 f.append(f"[ac]{','.join(af) or 'anull'}[a]")
 fc = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False)
