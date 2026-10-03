@@ -5,7 +5,7 @@ description: Escreva o SEO de YouTube de um episódio de podcast (título, descr
 
 # SEO de YouTube para podcast
 
-Pedido recorrente (Bombordo EP 01/02, Pod Acontecer EP 17/20/21/22/23, Autismo Cast). O
+Pedido recorrente (Bombordo EP 01/02, Pod Acontecer EP 17/20/21/22/23, Autismo Cast, Podcast 50 Mais da Katia). O
 usuário sempre quer **o mesmo modelo dos episódios anteriores** e que **o título converse
 com a thumb**. Nunca invente um formato novo.
 
