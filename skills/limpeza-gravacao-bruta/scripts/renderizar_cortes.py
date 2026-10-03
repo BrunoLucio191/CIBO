@@ -54,16 +54,24 @@ if a.so_plano:
 # Punch-in (Katia, podcast multicâmera 14/09): emenda que não cai numa troca de câmera vira jump cut no mesmo
 # plano. O trecho depois dela entra com zoom até a próxima troca de câmera, e a emenda passa por troca de plano.
 punch = json.load(open(a.punch)) if a.punch else []
-W0, H0 = (int(v) for v in subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries",
-          "stream=width,height", "-of", "csv=p=0", a.original], capture_output=True, text=True).stdout.split(",")[:2])
+W0, H0, fr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries",
+                             "stream=width,height,r_frame_rate", "-of", "csv=p=0", a.original],
+                            capture_output=True, text=True).stdout.strip().split(",")[:3]
+W0, H0 = int(W0), int(H0)
+# A troca de câmera medida é o PTS do primeiro quadro do plano novo; trim até esse tempo (arredondado para cima)
+# leva esse quadro com o zoom do plano anterior (frame solto, Katia 20:29). Recua as bordas meio quadro.
+num, den = (fr.split("/") + ["1"])[:2]
+meio = 0.5 * float(den) / float(num)
+punch = [[p[0] - meio, p[1] - meio, *p[2:]] for p in punch]
 
 
 def pedacos(x, y):
     """Divide [x, y] nas bordas dos punch-ins: [(ini, fim, punch|None)]."""
-    bordas = sorted({x, y, *(t for p in punch for t in p[:2] if x < t < y)})
+    # borda a menos de um quadro da ponta do trecho geraria um pedaço de 0–1 quadro (frame solto)
+    bordas = sorted({x, y, *(t for p in punch for t in p[:2] if x + 2 * meio < t < y - 2 * meio)})
     out = []
     for u, v in zip(bordas, bordas[1:]):
-        p = next((p for p in punch if p[0] <= u and v <= p[1]), None)
+        p = next((p for p in punch if p[0] <= (u + v) / 2 <= p[1]), None)
         out.append((u, v, p))
     return out
 
