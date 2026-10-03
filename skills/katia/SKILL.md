@@ -19,6 +19,14 @@ from `podcast-reels` for this client — same engine, Katia-specific defaults be
 
 ## Katia — client defaults
 
+- **Long interview podcast is a different job.** Besides the scripted monologues, Katia
+  (Kátia Ribeiro) hosts a 50+ interview podcast (e.g. 2026-09-14 with Karla Sarney —
+  spelled with K, Whisper writes "Carla"), recorded as an already-switched multicam
+  16:9 master. When the user asks to "editar esse podcast" there, it means a clean
+  long edit only — no Reels, no cover, no music, stays horizontal ("eu n quero corte,
+  é um podcast limpo"). Use `limpeza-gravacao-bruta` (with `--punch` for same-shot
+  joins) and `video-delivery-safety-check`; the raw audio peaks above 0 dBFS.
+
 - **Caption + cover font:** Montserrat Bold (`assets/Montserrat-VariableFont_wght.ttf`,
   variable font — `render_caps.py`/`cover.py` call `set_variation_by_name('Bold')`,
   override with `FONT_WEIGHT` env if a different weight is ever needed). Set
