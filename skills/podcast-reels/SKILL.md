@@ -197,6 +197,18 @@ These all shipped once. Do not rediscover them.
     com o `face_crop.py` e confira que cada mudanca coincide com um corte de
     camera.
 
+19. **O snap move a emenda para dentro da palavra.** O ponto mais quieto em ±160 ms
+    pode cair no meio da cauda sibilante ("posições" → "postos") ou logo depois de um
+    ataque curto de outra voz ("contrária, tá?"). Quando o envelope medido a mão
+    mostra isso, liste o tempo (no fonte) em `nosnap: [t, ...]` no clipe e ele fica
+    exatamente onde foi pedido. Confirme sempre retranscrevendo só o áudio cortado
+    (large-v3) antes do render.
+20. **Multicâmera:** o motor recebe um `src` só. Monte antes um master horizontal
+    sincronizado (offset por correlação do envelope de áudio entre as câmeras), com
+    a troca de câmera em silêncio entre keeps e cada plano já recortado em 608×1080
+    no centro de um quadro 1920×1080 (`cropx: 0.5`). Ganho de voz por falante com
+    `volume` + expressão: a expressão é **linear**, não dB (`if(lt(t,X),2.818,19.95)`
+    = +9/+26 dB), e zere o tempo com `asetpts=PTS-STARTPTS` quando houver `-ss`.
 
 ## Caption rhythm: never drop a block
 

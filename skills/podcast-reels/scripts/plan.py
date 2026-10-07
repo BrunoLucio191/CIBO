@@ -144,8 +144,11 @@ def build(name):
     # keep-map: source time -> final time
     K=c['keeps']; keeps=[]
     for i,(a,b) in enumerate(K):
-        a2=a if i==0 else snap(c['src'],a)
-        b2=b if i==len(K)-1 else snap(c['src'],b)
+        # `nosnap`: pontos (tempo no fonte) medidos a mao no envelope que o snap nao pode
+        # mover — ex.: cauda sibilante de uma palavra, onde o ponto mais quieto cai no meio do "s"
+        NS=c.get('nosnap',[]); fixo=lambda t: any(abs(t-x)<1e-3 for x in NS)
+        a2=a if i==0 or fixo(a) else snap(c['src'],a)
+        b2=b if i==len(K)-1 or fixo(b) else snap(c['src'],b)
         keeps.append((a2,b2))
     keeps=[(a,b) for a,b in keeps if b-a>0.25]
     c=dict(c); c['keeps']=keeps
