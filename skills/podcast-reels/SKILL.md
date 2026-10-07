@@ -209,6 +209,15 @@ These all shipped once. Do not rediscover them.
     no centro de um quadro 1920×1080 (`cropx: 0.5`). Ganho de voz por falante com
     `volume` + expressão: a expressão é **linear**, não dB (`if(lt(t,X),2.818,19.95)`
     = +9/+26 dB), e zere o tempo com `asetpts=PTS-STARTPTS` quando houver `-ss`.
+21. **Voz de microfone distante elevada +20 dB traz chiado e sala.** Limpe antes do
+    ganho com DeepFilterNet (`~/.venvs/dfn`, `deepFilter --atten-lim 24`): no pod da
+    Lilian o SNR foi de 24 para 39 dB sem perder palavra (conferido retranscrevendo).
+    Depois, EQ por falante medida em bandas relativas a 1–2 kHz (lapela abafada:
+    -4 dB em 350 Hz, +5 dB em 3,5 kHz, shelf +4 dB em 7,5 kHz), compressão leve 2,5:1,
+    de-esser e ganho fixo. Cor por câmera: meça neutro (camisa branca) e ângulo de pele
+    (~123°) antes e depois; corrigir o neutro só nos realces já empurra a pele para o
+    amarelo, então aplique metade e meça de novo. No zsh, escreva `${VAR}[x]` em
+    filtergraph: `$VAR[x]` vira índice de array.
 
 ## Caption rhythm: never drop a block
 
