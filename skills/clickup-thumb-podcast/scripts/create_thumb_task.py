@@ -77,9 +77,12 @@ def build(job):
         *([f"**Gravação:** {job['gravacao']}"] if job.get("gravacao") else []),
         *([f"**Subir aqui:** {job['subir_aqui']}"] if job.get("subir_aqui") else []),
     ]
-    faltando = [k for k in ("instagram_convidado", "gravacao", "subir_aqui") if not job.get(k)]
+    faltando = ([k for k in ("instagram", "drive") if not job.get(k)] if job.get("formato") == "bombordo"
+                else [k for k in ("instagram_convidado", "gravacao", "subir_aqui") if not job.get(k)])
     if faltando:
         print("AVISO: sem " + ", ".join(faltando) + " — essas linhas ficaram fora da demanda.", file=sys.stderr)
+    if job.get("formato") == "bombordo":
+        lines = bombordo_lines(job, ep)
     ms, dt = due_ms(job.get("prazo"))
     body = {
         "name": name,
@@ -91,6 +94,32 @@ def build(job):
         "due_date_time": True,
     }
     return body, dt
+
+
+def bombordo_lines(job, ep):
+    """Formato das demandas do Bombordo e Boreste (EP 03/04): duas opções de thumb (teste A/B do YouTube),
+    versão 1:1 do Spotify, orientação de frames, Instagram do convidado/empresa e link do Drive.
+    Campos: convidado_desc, cargo, como_escrever, host, opcoes=[{titulo, subtitulo}, ...],
+    instagram=["Empresa: @perfil", ...], drive (opcional)."""
+    L = [f"Ep: {ep}",
+         f"Convidado: {job.get('convidado_desc', job['convidado'])}",
+         f"Cargo: {job['cargo']}",
+         f"Como escrever na arte: {job.get('como_escrever', job['convidado'])}",
+         f"Host: {job.get('host', 'Daniel Pereira')}",
+         f"Podcast: {job['podcast']}", "",
+         f"Fazer {'duas opções' if len(job['opcoes']) == 2 else str(len(job['opcoes'])) + ' opções'} de thumb", ""]
+    for i, o in enumerate(job["opcoes"]):
+        L += [f"Opção {chr(65 + i)}", f"Título: {o['titulo']}", f"Subtítulo: {o['subtitulo']}", ""]
+    L += ["Thumb do Spotify",
+          "Fazer também uma versão 1:1 (quadrada, 3000×3000) da opção escolhida para o Spotify, com o mesmo título e o rosto do convidado centralizado", "",
+          "Orientações para a thumb:",
+          "Pegar frames do vídeo com as fotos dos participantes (convidado e host), de frente e com boa expressão",
+          *job.get("orientacoes", []), ""]
+    if job.get("instagram"):
+        L += ["Instagram:", *job["instagram"], ""]
+    if job.get("drive"):
+        L += ["📎 Drive (fotos, onde subir e material bruto)", job["drive"]]
+    return L
 
 
 def main():

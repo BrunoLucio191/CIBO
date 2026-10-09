@@ -38,6 +38,12 @@ Cria a tarefa do designer via API do ClickUp. O token fica em `~/.config/clickup
 - Pod Acontecer: hosts atuais **Mota** (Felipe Mota, @portaldomota_) e **John Cutrim**
   (@john.cutrim), salvo orientação diferente do episódio.
 
+## Bombordo e Boreste
+
+Use `"formato": "bombordo"` no job: duas opções de thumb (teste A/B do YouTube, `opcoes`),
+versão 1:1 do Spotify, orientação de frames, `instagram` (convidado e/ou empresa) e `drive`. É o
+formato das demandas EP 03/04. O nome da tarefa usa a opção A (`titulo_thumb`).
+
 ## Fluxo
 
 1. Monte o título/subtítulo da thumb junto com o SEO do episódio (mesmo gancho): skill
