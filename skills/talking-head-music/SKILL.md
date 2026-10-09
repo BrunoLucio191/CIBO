@@ -75,6 +75,16 @@ exato a subtracao soma as duas copias e devolve um numero maior que o sinal.
 Renderizar os dois pelo mesmo pipeline garante alinhamento por construcao.
 
 
+## O começo da faixa precisa ser audível no celular
+
+Volume constante não basta: uma faixa pode abrir com 60–75% da energia abaixo de 150 Hz
+(sub-grave), que some no alto-falante do celular e sob a voz, e o usuário ouve "a música
+está tão baixa no começo que não toca nada". Meça a energia acima de 300 Hz nos primeiros
+8 s do corte (alvo: > 60%) e escolha o `music_offset` num trecho melódico. Se a faixa tiver
+uma quebra (queda de > 15 dB) no meio do corte, monte uma cama com dois trechos melódicos
+emendados por `acrossfade` de 2 s em vez de deixar a quebra cair no meio da fala.
+(podLilian, 09/10/2026)
+
 ## Mixing invariants
 
 - Voice remains the anchor. Duck from the dialogue signal with a moderate attack and a release long enough to avoid pumping between words.
