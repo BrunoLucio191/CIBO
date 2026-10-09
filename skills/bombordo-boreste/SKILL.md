@@ -27,18 +27,21 @@ silence-snapped trimming, caption rendering, audio sweetening and the cover.
   conte o que já existe e complete. Nenhuma fala pode aparecer em dois cortes. Antes de
   escolher, levante as janelas já usadas (`master_in` + cada `keeps` de cada `job.json`,
   mais os cortes que vieram prontos do Drive) e descarte candidatos que se sobreponham.
-- **Numeração dos episódios.** A pasta local `epN` é o "EP N-1" no YouTube (o episódio do
-  Silvio Lúcio é o EP 0 no canal). Identifique o episódio pelos convidados ou pela duração,
-  nunca só pelo número.
+- **Pastas dos episódios (desde 09/10/2026).** Uma pasta por episódio com o nome do Drive e a numeração
+  do YouTube: `content/bombordo/EP NN - Convidado/`, na estrutura da skill `video-project-structure`:
+  bruto em `01_sources/masters/`, projeto de edição (job.json, pipeline) em `04_work/`, entregas em
+  `06_deliverables/` (episódio, cortes, capas; `_versoes_antigas/`). Pastas antigas `epN`, `CORTES/` e
+  `brutos/` não existem mais; o mapa está em `_migracao_2026-10-09.json`. Identifique o episódio pelos
+  convidados ou pela duração, nunca só pelo número (arquivos antigos usam epN = EP N-1).
 - **Grafia:** "Bombordo e Boreste", com "Bombordo" sempre junto. O Whisper escreve
   "Bom Bordo" ou parte a palavra entre duas cues: as regras de `fix` do `job.json` cobrem
   os dois casos. Copie-as para cada episódio novo e confira nas transcrições entregues.
-- **Sempre partir do master** em `content/bombordo/CORTES/Cortes epN/` ou `epN/sources/`,
-  nunca de um MP4 solto em `~/Movies` (pode ser versão substituída, com a grafia errada).
+- **Sempre partir do bruto/master do episódio** em `EP NN - Convidado/01_sources/masters/` (ou o master
+  em `04_work/sources/master/`), nunca de um MP4 solto em `~/Movies` (pode ser versão substituída, com a grafia errada).
 - **Capa:** a pessoa de frente, olhos abertos e sorriso real (`cover_pick.py --master`).
   A convidada precisa ficar bonita: pode vir de qualquer momento do episódio (`cover_from`).
 - **Música a −27 dB** (`mix.music_db`), não −21: "a música tá um pouco muito alta".
-- **Entrega:** uma pasta `CORTES/Cortes epN/` por episódio, sem níveis numerados. Arquivos
+- **Entrega:** os cortes vão para `EP NN - Convidado/06_deliverables/cortes/`, sem níveis numerados. Arquivos
   `NN - HEADLINE.mp4`, com acentos, numerados pela ordem em que a fala aparece no
   episódio (ordenar por `master_in`), e a capa `CAPA - NN - HEADLINE.png` (prefixo, para as
   capas ficarem agrupadas no Finder). Grave o nome em `filename` no `job.json`, senão o
