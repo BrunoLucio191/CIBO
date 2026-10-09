@@ -290,6 +290,13 @@ first — don't default to 0:00 or the first file in a folder. Aggregator downlo
 (Pixabay, Mixkit, etc.) are blocked from the sandbox; pick from an approved local
 library instead.
 
+**Ducking em fala contínua:** o default `duck_ratio` 6 / `duck_threshold` 0.08 mantém a
+trilha abaixada o corte inteiro quando a fala não para, e o usuário ouve "a música demora
+demais pra aparecer". Para talking head contínuo use `duck_ratio` 3, `duck_threshold` 0.1 e
+`music_db` ~-18, e meça por subtração (final − `A_<clip>.mp4`): a música deve estar presente
+desde o primeiro segundo e ~16–20 dB abaixo da voz. Para fechar o corte, `BURN_OUT=0.63`
+(burn na saída); sem isso o vídeo "corta do nada" no fim. (podLilian, 09/10/2026)
+
 ## Deliverables
 
 `outdir/<clip>.mp4` (1 s cover + film burn + clip) and `outdir/capa_<clip>.png`.
