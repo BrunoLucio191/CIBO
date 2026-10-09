@@ -52,8 +52,9 @@ memórias por pasta, que não carregam fora da pasta onde nasceram. Cada regra t
   escura. Se o falante aparece pequeno no plano aberto, use o aberto, não um "close" ampliado.
   Rode `video-delivery-safety-check` (nitidez contra a fonte) antes de entregar. (João/Begrow:
   "a qualidade já não tá perfeita e você ainda dá esse close no João", 09/10/2026)
-- **Burn no final sempre termina em tela preta**, com o efeito tocando inteiro (sem cortar no
-  meio) e o último quadro segurado para não engolir a palavra final. No motor `podcast-reels`:
+- **Burn no final: vídeo acaba seco e o burn passa do fim, sobre preto.** Como numa timeline
+  com a trilha do vídeo e a do efeito por cima, terminando depois dela. O pico do burn cai no
+  último quadro do vídeo; nada de fade nem de congelar a imagem. No `podcast-reels`:
   `scripts/burn_end.py`. Vale para qualquer cliente que use burn na saída. (podLilian, 09/10/2026)
 - **Todo corte vertical leva trilha**, mesmo sem pedido. Biblioteca própria no SSD:
   `/Volumes/SSD/Music/Sound/Músicas edicao` e `/Volumes/SSD/Music/Projeto premiere/`
