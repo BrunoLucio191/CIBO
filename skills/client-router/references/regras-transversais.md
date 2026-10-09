@@ -46,6 +46,12 @@ memórias por pasta, que não carregam fora da pasta onde nasceram. Cada regra t
 - **O enquadramento só muda onde a câmera corta.** Um `cropx` por plano de câmera, nunca
   por trecho mantido. Um salto de 46 px numa emenda de áudio foi lido como "deslize".
   Prefira o quadro parado à câmera virtual que persegue o rosto. (Rodrigo, Dr. Energia)
+- **Sem zoom digital além da escala nativa.** Gravação em 1080p não aguenta ampliação: o
+  recorte de câmera usa a escala nativa (608×1080 para 9:16; o plano aberto entra inteiro no
+  16:9) e o ken-burns do motor fica desligado (`ZOOM_AMT=0`) quando a fonte já é 1080p ou
+  escura. Se o falante aparece pequeno no plano aberto, use o aberto, não um "close" ampliado.
+  Rode `video-delivery-safety-check` (nitidez contra a fonte) antes de entregar. (João/Begrow:
+  "a qualidade já não tá perfeita e você ainda dá esse close no João", 09/10/2026)
 - **Todo corte vertical leva trilha**, mesmo sem pedido. Biblioteca própria no SSD:
   `/Volumes/SSD/Music/Sound/Músicas edicao` e `/Volumes/SSD/Music/Projeto premiere/`
   (AMBIENTAÇÃO, IMPACTO, RISERS, HITS, ATMOSFERA, WHOOSHS). Escolha e nível pela skill
