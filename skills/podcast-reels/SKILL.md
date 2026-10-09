@@ -294,8 +294,12 @@ library instead.
 trilha abaixada o corte inteiro quando a fala não para, e o usuário ouve "a música demora
 demais pra aparecer". Para talking head contínuo use `duck_ratio` 3, `duck_threshold` 0.1 e
 `music_db` ~-18, e meça por subtração (final − `A_<clip>.mp4`): a música deve estar presente
-desde o primeiro segundo e ~16–20 dB abaixo da voz. Para fechar o corte, `BURN_OUT=0.63`
-(burn na saída); sem isso o vídeo "corta do nada" no fim. (podLilian, 09/10/2026)
+desde o primeiro segundo e ~16–20 dB abaixo da voz. Para fechar o corte, o burn de saída
+precisa tocar INTEIRO (o asset tem 1,4 s, pico em 0,53 s): `BURN_OUT=0.63` deixa o pico no
+último quadro e corta o esvaecimento ("o burn é cortado bem no meio"). Faça: render com
+`BURN_OUT=0`, depois congele o último quadro por 0,9 s (`tpad=stop_mode=clone`), comece o burn
+0,5 s antes do fim da fala e deixe-o terminar no último quadro, com `apad` + `afade` de 1,3 s
+na música. Sem burn nenhum o vídeo "corta do nada". (podLilian, 09/10/2026)
 
 ## Deliverables
 
