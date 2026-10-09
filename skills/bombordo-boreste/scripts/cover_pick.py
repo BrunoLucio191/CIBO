@@ -91,6 +91,10 @@ def scan_master(master, fps=3, top=48):
     for r0 in rows:
         if all(abs(r0['t'] - p['t']) >= 1.2 for p in pick): pick.append(r0)
         if len(pick) == top: break
+    if not pick:
+        print('nenhum sorriso estrito (dentes + olhos abertos) no episódio: use cover_pick.py <clip> '
+              'para os candidatos de cada corte, ou procure nos momentos de risada da transcrição')
+        return
     pick.sort(key=lambda r: r['t']); tiles = []
     for n, p in enumerate(pick):
         fr = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(p['t']), '-i', master, '-frames:v', '1',
