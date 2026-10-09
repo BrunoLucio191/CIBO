@@ -113,6 +113,12 @@ def display(words, proper=()):
 
 def build(job, work, clip, cfg):
     W = jload(os.path.join(kdir(work), f'words_{clip}.json'))
+    merged = []                                   # "quarta -feira", "e -mail": Whisper separa o hífen
+    for w in W['words']:
+        if merged and w['w'].startswith('-'):
+            merged[-1] = dict(merged[-1], w=merged[-1]['w'] + w['w'], e=w['e']); continue
+        merged.append(w)
+    W['words'] = merged
     words = display(W['words'], cfg.get('proper', []))
     emph = set(norm(x) for x in job.get('emph', '').split())
     blocks = base_blocks(words, cfg)

@@ -109,8 +109,45 @@ def scan_master(master, fps=3, top=48):
     json.dump(pick, open(os.path.join(B, 'master_smiles.json'), 'w'), indent=1)
     print('candidatos:', len(pick), '->', os.path.join(B, 'master_smiles.jpg'))
 
+def scan_windows(master, wins, fps=2, out=None):
+    """Quando o modo --master não acha sorriso estrito (EP 04 Galego, EP 05 Arthur: risadas com olhos
+    apertados, barba), olhe os momentos de risada da TRANSCRIÇÃO. Para cada janela a:b (s ou mm:ss),
+    amostra `fps` quadros/s, acha o maior rosto e recorta a janela 9:16 (608x1080) centrada nele.
+    Folha <work>/cover_windows.jpg rotulada t:x0 -> cover_from {"src": master, "t": t, "x0": x0}."""
+    def sec(x):
+        p = [float(v) for v in x.split(':')]
+        return sum(v * 60 ** i for i, v in enumerate(reversed(p)))
+    b = cv2.data.haarcascades
+    face = cv2.CascadeClassifier(b + 'haarcascade_frontalface_default.xml')
+    tiles = []
+    for w in wins:
+        a, z = [sec(v) for v in w.split('-')] if '-' in w else [sec(v) for v in w.split(',')]
+        r = subprocess.run(['ffmpeg', '-v', 'error', '-ss', f'{a}', '-t', f'{z - a}', '-i', master, '-vf', f'fps={fps}',
+                            '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'], capture_output=True).stdout
+        n = len(r) // (1920 * 1080 * 3)
+        F = np.frombuffer(r[:n * 1920 * 1080 * 3], np.uint8).reshape(n, 1080, 1920, 3)
+        for i, img in enumerate(F):
+            g = cv2.cvtColor(cv2.resize(img, (960, 540)), cv2.COLOR_BGR2GRAY)
+            fs = face.detectMultiScale(g, 1.1, 6, minSize=(50, 50))
+            if len(fs) == 0: continue
+            x, y, fw, fh = [v * 2 for v in max(fs, key=lambda f: f[2])]
+            x0 = int(min(1920 - 608, max(0, x + fw / 2 - 304)))
+            tl = cv2.resize(img[:, x0:x0 + 608], (180, 320))
+            cv2.rectangle(tl, (0, 0), (180, 18), (0, 0, 0), -1)
+            cv2.putText(tl, f'{a + i / fps:.1f}:{x0}', (3, 13), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 255, 255), 1)
+            tiles.append(tl)
+    if not tiles: print('nenhum rosto nas janelas'); return
+    while len(tiles) % 10: tiles.append(np.zeros((320, 180, 3), np.uint8))
+    out = out or os.path.join(B, 'cover_windows.jpg')
+    cv2.imwrite(out, np.vstack([np.hstack(tiles[i:i + 10]) for i in range(0, len(tiles), 10)]))
+    print(len(tiles), 'quadros ->', out)
+
+
 if __name__ == '__main__':
-    if '--master' in sys.argv:
+    if '--master' in sys.argv and '--janelas' in sys.argv:
+        i = sys.argv.index('--janelas')
+        scan_windows(sys.argv[sys.argv.index('--master') + 1], sys.argv[i + 1:])
+    elif '--master' in sys.argv:
         scan_master(sys.argv[sys.argv.index('--master') + 1])
     else:
         for k in (sys.argv[1:] or list(JOB['clips'])): score_clip(k)
