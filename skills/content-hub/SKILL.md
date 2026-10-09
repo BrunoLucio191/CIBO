@@ -66,8 +66,8 @@ Na primeira utilização em uma máquina nova, crie `.venv` e instale `requireme
 7. Renderize:
 
 ```bash
-JOB=job.json ~/.codex/skills/content-hub/.venv/bin/python3 \
-  ~/.codex/skills/content-hub/scripts/make_reels.py
+JOB=job.json ~/.claude/skills/content-hub/.venv/bin/python3 \
+  ~/.claude/skills/content-hub/scripts/make_reels.py
 ```
 
 ## Regras visuais e técnicas

@@ -6,7 +6,7 @@ encaixada no pipeline normal da skill (`make_reels.py`). Não usa ASS nem drawte
 ## Comandos (rodar na pasta do job)
 
 ```bash
-PY=~/.codex/skills/podcast-reels/.venv/bin/python3
+PY=~/.claude/skills/bombordo-boreste/.venv/bin/python3
 K=~/.claude/skills/bombordo-boreste/scripts/kinetic/cli.py
 JOB=job.json $PY $K align   [corte..]   # 1. tempo por palavra  -> work/kinetic/words_<corte>.json
 JOB=job.json $PY $K segment [corte..]   # 2. blocos + destaques -> work/kinetic/blocks_<corte>.json

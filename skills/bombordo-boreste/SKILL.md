@@ -6,9 +6,9 @@ description: Crie cortes verticais 9:16 para Reels, TikTok e Shorts do podcast B
 # Bombordo e Boreste → Reels
 
 **Local setup:** dependencies (Pillow, numpy, OpenCV headless) live in the bundled venv at
-`~/.codex/skills/bombordo-boreste/.venv`. Run scripts with
-`~/.codex/skills/bombordo-boreste/.venv/bin/python3
-~/.codex/skills/bombordo-boreste/scripts/make_reels.py`, or activate that venv first,
+`~/.claude/skills/bombordo-boreste/.venv`. Run scripts with
+`~/.claude/skills/bombordo-boreste/.venv/bin/python3
+~/.claude/skills/bombordo-boreste/scripts/make_reels.py`, or activate that venv first,
 instead of the bare `python3` shown below. Requires `ffmpeg` and `ffprobe` on PATH.
 
 

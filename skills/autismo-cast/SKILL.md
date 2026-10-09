@@ -6,9 +6,9 @@ description: Crie cortes verticais 9:16 para Reels, TikTok e Shorts do Autismo C
 # Autismo Cast → Reels
 
 **Local setup:** dependencies (Pillow, numpy, OpenCV headless) live in the bundled venv at
-`~/.codex/skills/autismo-cast/.venv`. Run scripts with
-`~/.codex/skills/autismo-cast/.venv/bin/python3
-~/.codex/skills/autismo-cast/scripts/make_reels.py`, or activate that venv first,
+`~/.claude/skills/autismo-cast/.venv`. Run scripts with
+`~/.claude/skills/autismo-cast/.venv/bin/python3
+~/.claude/skills/autismo-cast/scripts/make_reels.py`, or activate that venv first,
 instead of the bare `python3` shown below. Requires `ffmpeg` and `ffprobe` on PATH.
 
 
